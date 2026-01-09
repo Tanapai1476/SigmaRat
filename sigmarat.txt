@@ -24,7 +24,7 @@ local gapValue = 2
 local orbitShape = "Circle" -- "Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star"
 local animationMode = "None" -- "None", "Pulse", "Expand", "Wobble", "Spin"
 local wireframeMode = false
-local wireframeShape = "Cube" -- "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron"
+local wireframeShape = "None" -- "None", "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron"
 local hammerMode = false
 local hammerStatue = nil
 local hammerParts = {}
@@ -252,14 +252,15 @@ wireframeToggle.Font = Enum.Font.SourceSansBold
 wireframeToggle.Parent = scrollFrame
 
 -- Wireframe Shape Buttons
-local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.05, 0, 0, 670))
-wireframeCube.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.36, 0, 0, 670))
-local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.67, 0, 0, 670))
+local wireframeNone = createSmallButton("WireframeNone", "None", UDim2.new(0.05, 0, 0, 670))
+wireframeNone.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.36, 0, 0, 670))
+local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.67, 0, 0, 670))
+local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.05, 0, 0, 703))
 wireframeOcta.TextSize = 10
-local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.05, 0, 0, 703))
+local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.36, 0, 0, 703))
 wireframeTetra.TextSize = 10
-local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.36, 0, 0, 703))
+local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.67, 0, 0, 703))
 wireframeIco.TextSize = 10
 
 -- Hammer Mode Section
@@ -857,7 +858,7 @@ local function startOrbiting()
 	-- Orbit parameters for each part
 	local orbitData = {}
 	
-	if wireframeMode then
+	if wireframeMode and wireframeShape ~= "None" then
 		-- Wireframe mode: assign parts to edges of a 3D shape
 		local shape = wireframeShapes[wireframeShape]
 		
@@ -1012,7 +1013,7 @@ local function startOrbiting()
 			if part and part.Parent then
 				local targetPos
 				
-				if data.wireframe then
+				if data.wireframe and wireframeShape ~= "None" then
 					-- Wireframe mode
 					targetPos = calculateWireframePosition(centerPos, data, time)
 				else
@@ -1166,6 +1167,11 @@ animSpin.MouseButton1Click:Connect(function() updateAnimationMode("Spin", animSp
 wireframeToggle.MouseButton1Click:Connect(function()
 	wireframeMode = not wireframeMode
 	if wireframeMode then
+		if wireframeShape == "None" then
+			wireframeShape = "Cube"
+			wireframeNone.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+			wireframeCube.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+		end
 		wireframeLabel.Text = "Wireframe Mode: ON - " .. wireframeShape
 		wireframeToggle.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
 	else
@@ -1175,12 +1181,19 @@ wireframeToggle.MouseButton1Click:Connect(function()
 end)
 
 -- Wireframe Shape Button Events
-local wireframeButtons = {wireframeCube, wireframePyramid, wireframeOcta, wireframeTetra, wireframeIco}
+local wireframeButtons = {wireframeNone, wireframeCube, wireframePyramid, wireframeOcta, wireframeTetra, wireframeIco}
 
 local function updateWireframeShape(selectedShape, buttonClicked)
 	wireframeShape = selectedShape
-	if wireframeMode then
+	
+	if selectedShape == "None" then
+		wireframeMode = false
+		wireframeLabel.Text = "Wireframe Mode: OFF"
+		wireframeToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	else
+		wireframeMode = true
 		wireframeLabel.Text = "Wireframe Mode: ON - " .. wireframeShape
+		wireframeToggle.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
 	end
 	
 	for _, btn in ipairs(wireframeButtons) do
@@ -1190,6 +1203,7 @@ local function updateWireframeShape(selectedShape, buttonClicked)
 	buttonClicked.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
 end
 
+wireframeNone.MouseButton1Click:Connect(function() updateWireframeShape("None", wireframeNone) end)
 wireframeCube.MouseButton1Click:Connect(function() updateWireframeShape("Cube", wireframeCube) end)
 wireframePyramid.MouseButton1Click:Connect(function() updateWireframeShape("Pyramid", wireframePyramid) end)
 wireframeOcta.MouseButton1Click:Connect(function() updateWireframeShape("Octahedron", wireframeOcta) end)
