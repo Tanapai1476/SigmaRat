@@ -611,15 +611,26 @@ local function smashHammer()
 		local elapsed = tick() - smashStartTime
 		local progress = math.min(elapsed / smashDuration, 1)
 		
-		if progress < 0.4 then
-			-- Lift hammer up
-			local liftProgress = progress / 0.4
+		if progress < 0.3 then
+			-- Lift hammer up and start rotating back
+			local liftProgress = progress / 0.3
 			local liftHeight = liftProgress * 25
+			local rotationAngle = liftProgress * math.pi * 0.5 -- Rotate 90 degrees back
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerShape[i] then
 					local offset = hammerShape[i]
-					local targetPos = basePos + Vector3.new(offset.X, offset.Y + liftHeight, offset.Z)
+					
+					-- Apply rotation around pivot point (bottom of handle)
+					local pivotY = 0
+					local relativeY = offset.Y - pivotY
+					local relativeX = offset.X
+					
+					-- Rotate in XY plane
+					local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
+					local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+					
+					local targetPos = basePos + Vector3.new(rotatedX, rotatedY + liftHeight, offset.Z)
 					
 					local direction = (targetPos - part.Position)
 					part.AssemblyLinearVelocity = direction * 10
@@ -627,15 +638,29 @@ local function smashHammer()
 				end
 			end
 			
-		elseif progress < 0.8 then
-			-- Smash down
-			local smashProgress = (progress - 0.4) / 0.4
-			local smashOffset = 25 - (smashProgress * 30) -- Go from +25 to -5
+		elseif progress < 0.7 then
+			-- Smash down with rotation - hammer swings forward
+			local smashProgress = (progress - 0.3) / 0.4
+			local smashHeight = 25 - (smashProgress * 30) -- Go from +25 to -5
+			local rotationAngle = (math.pi * 0.5) - (smashProgress * math.pi * 0.6) -- Swing forward 108 degrees
+			
+			-- Move hammer toward target as it swings
+			local horizontalProgress = smashProgress * 20 // Move 20 studs toward center
+			local hammerCenterPos = basePos - Vector3.new(horizontalProgress, 0, 0)
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerShape[i] then
 					local offset = hammerShape[i]
-					local targetPos = basePos + Vector3.new(offset.X, offset.Y + smashOffset, offset.Z)
+					
+					-- Apply rotation around pivot point
+					local pivotY = 0
+					local relativeY = offset.Y - pivotY
+					local relativeX = offset.X
+					
+					local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
+					local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+					
+					local targetPos = hammerCenterPos + Vector3.new(rotatedX, rotatedY + smashHeight, offset.Z)
 					
 					local direction = (targetPos - part.Position)
 					part.AssemblyLinearVelocity = direction * 20
@@ -644,7 +669,7 @@ local function smashHammer()
 			end
 			
 			-- EXPLODE UNUSED PARTS on impact
-			if smashProgress > 0.6 then
+			if smashProgress > 0.5 then
 				for _, part in ipairs(unusedParts) do
 					if part and part.Parent then
 						local directionFromCenter = (part.Position - centerPos).Unit
@@ -662,47 +687,75 @@ local function smashHammer()
 			end
 			
 		else
-			-- Return to idle
-			if hammerConnection then
-				hammerConnection:Disconnect()
-				hammerConnection = nil
-			end
+			-- Return to idle with rotation back to vertical
+			local returnProgress = (progress - 0.7) / 0.3
+			local returnHeight = -5 + (returnProgress * 11) // Return from -5 to +6
+			local rotationAngle = (-math.pi * 0.1) + (returnProgress * math.pi * 0.1) // Return to 0 rotation
+			local horizontalReturn = 20 - (returnProgress * 20) // Return to original position
+			local hammerCenterPos = basePos - Vector3.new(horizontalReturn, 0, 0)
 			
-			-- Restart idle animation
-			local idleStartTime = tick()
-			
-			hammerConnection = RunService.Heartbeat:Connect(function()
-				if not selectedPart or not selectedPart.Parent then
-					destroyHammer()
-					return
+			if returnProgress >= 1 then
+				-- Fully returned, restart idle animation
+				if hammerConnection then
+					hammerConnection:Disconnect()
+					hammerConnection = nil
 				end
 				
-				local time = tick() - idleStartTime
-				local floatHeight = math.sin(time * 2) * 1
-				local rotationAngle = math.sin(time * 0.5) * 0.2
+				local idleStartTime = tick()
 				
+				hammerConnection = RunService.Heartbeat:Connect(function()
+					if not selectedPart or not selectedPart.Parent then
+						destroyHammer()
+						return
+					end
+					
+					local time = tick() - idleStartTime
+					local floatHeight = math.sin(time * 2) * 1
+					local rotationAngle = math.sin(time * 0.5) * 0.2
+					
+					for i, part in ipairs(hammerParts) do
+						if part and part.Parent and hammerShape[i] then
+							local offset = hammerShape[i]
+							local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
+							local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
+							local targetPos = basePos + Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
+							
+							local direction = (targetPos - part.Position)
+							local distance = direction.Magnitude
+							
+							if distance > 0.1 then
+								part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 8, 40)
+							else
+								part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+							end
+							
+							part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+						end
+					end
+				end)
+				
+				print("Hammer returned to idle position")
+			else
+				-- Still returning
 				for i, part in ipairs(hammerParts) do
 					if part and part.Parent and hammerShape[i] then
 						local offset = hammerShape[i]
-						local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
-						local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
-						local targetPos = basePos + Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
+						
+						local pivotY = 0
+						local relativeY = offset.Y - pivotY
+						local relativeX = offset.X
+						
+						local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
+						local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+						
+						local targetPos = hammerCenterPos + Vector3.new(rotatedX, rotatedY + returnHeight, offset.Z)
 						
 						local direction = (targetPos - part.Position)
-						local distance = direction.Magnitude
-						
-						if distance > 0.1 then
-							part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 8, 40)
-						else
-							part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-						end
-						
+						part.AssemblyLinearVelocity = direction * 15
 						part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 					end
 				end
-			end)
-			
-			print("Hammer returned to idle position")
+			end
 		end
 	end)
 end
