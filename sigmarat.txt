@@ -1,4 +1,4 @@
--- Orbit Parts Script with GUI and Wireframe Mode
+-- Orbit Parts Script with GUI and Wireframe Mode - FIXED HAMMER
 -- Place this in StarterPlayerScripts or StarterCharacterScripts
 
 local Players = game:GetService("Players")
@@ -15,20 +15,22 @@ local selectedPart = nil
 local orbitingParts = {}
 local orbitConnection = nil
 local selectionBox = nil
+local hideSelectionBox = false
 
 -- Settings Variables
 local orbitDistance = 10
 local orbitSpeed = 1
 local gapMode = "None" -- "None", "GapPerPart", "GapBetweenParts"
 local gapValue = 2
-local orbitShape = "Circle" -- "Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star"
-local animationMode = "None" -- "None", "Pulse", "Expand", "Wobble", "Spin"
+local orbitShape = "Circle" -- "Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star", "Pentagon", "Hexagon", "Octagon", "Diamond", "Heart", "Infinity", "Flower", "DNA", "Tornado", "Galaxy", "Rings", "Mobius"
+local animationMode = "None" -- "None", "Pulse", "Expand", "Wobble", "Spin", "Shake", "Bounce", "Twist", "Orbit", "Flip", "Stretch", "Swirl", "Jitter", "Wave"
 local wireframeMode = false
-local wireframeShape = "None" -- "None", "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron"
+local wireframeShape = "Cube" -- "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron", "Torus", "Cylinder", "Dodecahedron", "Sphere"
 local hammerMode = false
 local hammerStatue = nil
 local hammerParts = {}
 local hammerConnection = nil
+local hammerDepth = 3 -- Depth of hammer (3 studs thick)
 
 -- Create GUI
 local screenGui = Instance.new("ScreenGui")
@@ -56,7 +58,7 @@ scrollFrame.Position = UDim2.new(0, 0, 0, 30)
 scrollFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 scrollFrame.BorderSizePixel = 0
 scrollFrame.ScrollBarThickness = 6
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1200)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1850)
 scrollFrame.Parent = mainFrame
 
 -- Title
@@ -130,11 +132,25 @@ selectedLabel.TextSize = 12
 selectedLabel.Font = Enum.Font.SourceSans
 selectedLabel.Parent = scrollFrame
 
+-- Hide Selection Box Toggle
+local hideSelectionToggle = Instance.new("TextButton")
+hideSelectionToggle.Name = "HideSelectionToggle"
+hideSelectionToggle.Size = UDim2.new(0.9, 0, 0, 30)
+hideSelectionToggle.Position = UDim2.new(0.05, 0, 0, 85)
+hideSelectionToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hideSelectionToggle.BorderSizePixel = 1
+hideSelectionToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
+hideSelectionToggle.Text = "Hide Selection Box: OFF"
+hideSelectionToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+hideSelectionToggle.TextSize = 12
+hideSelectionToggle.Font = Enum.Font.SourceSans
+hideSelectionToggle.Parent = scrollFrame
+
 -- Orbit Distance Input
-local distanceTextbox = createLabeledTextbox("DistanceTextbox", "Orbit Distance (studs):", orbitDistance, 90, scrollFrame)
+local distanceTextbox = createLabeledTextbox("DistanceTextbox", "Orbit Distance (studs):", orbitDistance, 125, scrollFrame)
 
 -- Orbit Speed Input
-local speedTextbox = createLabeledTextbox("SpeedTextbox", "Orbit Speed (studs/second):", orbitSpeed, 155, scrollFrame)
+local speedTextbox = createLabeledTextbox("SpeedTextbox", "Orbit Speed (studs/second):", orbitSpeed, 190, scrollFrame)
 
 -- Gap Mode Section Label
 local gapModeLabel = Instance.new("TextLabel")
@@ -180,7 +196,7 @@ local gapTextbox = createLabeledTextbox("GapTextbox", "Gap Value (studs):", gapV
 local shapeLabel = Instance.new("TextLabel")
 shapeLabel.Name = "ShapeLabel"
 shapeLabel.Size = UDim2.new(0.9, 0, 0, 25)
-shapeLabel.Position = UDim2.new(0.05, 0, 0, 355)
+shapeLabel.Position = UDim2.new(0.05, 0, 0, 405)
 shapeLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 shapeLabel.BorderSizePixel = 1
 shapeLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -191,21 +207,33 @@ shapeLabel.Font = Enum.Font.SourceSansBold
 shapeLabel.Parent = scrollFrame
 
 -- Shape Buttons
-local shapeCircle = createSmallButton("ShapeCircle", "Circle", UDim2.new(0.05, 0, 0, 385))
+local shapeCircle = createSmallButton("ShapeCircle", "Circle", UDim2.new(0.05, 0, 0, 435))
 shapeCircle.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local shapeSphere = createSmallButton("ShapeSphere", "Sphere", UDim2.new(0.36, 0, 0, 385))
-local shapeCube = createSmallButton("ShapeCube", "Cube", UDim2.new(0.67, 0, 0, 385))
-local shapeSpiral = createSmallButton("ShapeSpiral", "Spiral", UDim2.new(0.05, 0, 0, 418))
-local shapeWave = createSmallButton("ShapeWave", "Wave", UDim2.new(0.36, 0, 0, 418))
-local shapeHelix = createSmallButton("ShapeHelix", "Helix", UDim2.new(0.67, 0, 0, 418))
-local shapeFigure8 = createSmallButton("ShapeFigure8", "Figure 8", UDim2.new(0.05, 0, 0, 451))
-local shapeStar = createSmallButton("ShapeStar", "Star", UDim2.new(0.36, 0, 0, 451))
+local shapeSphere = createSmallButton("ShapeSphere", "Sphere", UDim2.new(0.36, 0, 0, 435))
+local shapeCube = createSmallButton("ShapeCube", "Cube", UDim2.new(0.67, 0, 0, 435))
+local shapeSpiral = createSmallButton("ShapeSpiral", "Spiral", UDim2.new(0.05, 0, 0, 468))
+local shapeWave = createSmallButton("ShapeWave", "Wave", UDim2.new(0.36, 0, 0, 468))
+local shapeHelix = createSmallButton("ShapeHelix", "Helix", UDim2.new(0.67, 0, 0, 468))
+local shapeFigure8 = createSmallButton("ShapeFigure8", "Figure 8", UDim2.new(0.05, 0, 0, 501))
+local shapeStar = createSmallButton("ShapeStar", "Star", UDim2.new(0.36, 0, 0, 501))
+local shapePentagon = createSmallButton("ShapePentagon", "Pentagon", UDim2.new(0.67, 0, 0, 501))
+local shapeHexagon = createSmallButton("ShapeHexagon", "Hexagon", UDim2.new(0.05, 0, 0, 534))
+local shapeOctagon = createSmallButton("ShapeOctagon", "Octagon", UDim2.new(0.36, 0, 0, 534))
+local shapeDiamond = createSmallButton("ShapeDiamond", "Diamond", UDim2.new(0.67, 0, 0, 534))
+local shapeHeart = createSmallButton("ShapeHeart", "Heart", UDim2.new(0.05, 0, 0, 567))
+local shapeInfinity = createSmallButton("ShapeInfinity", "Infinity", UDim2.new(0.36, 0, 0, 567))
+local shapeFlower = createSmallButton("ShapeFlower", "Flower", UDim2.new(0.67, 0, 0, 567))
+local shapeDNA = createSmallButton("ShapeDNA", "DNA", UDim2.new(0.05, 0, 0, 600))
+local shapeTornado = createSmallButton("ShapeTornado", "Tornado", UDim2.new(0.36, 0, 0, 600))
+local shapeGalaxy = createSmallButton("ShapeGalaxy", "Galaxy", UDim2.new(0.67, 0, 0, 600))
+local shapeRings = createSmallButton("ShapeRings", "Rings", UDim2.new(0.05, 0, 0, 633))
+local shapeMobius = createSmallButton("ShapeMobius", "Mobius", UDim2.new(0.36, 0, 0, 633))
 
 -- Animation Mode Section
 local animLabel = Instance.new("TextLabel")
 animLabel.Name = "AnimLabel"
 animLabel.Size = UDim2.new(0.9, 0, 0, 25)
-animLabel.Position = UDim2.new(0.05, 0, 0, 490)
+animLabel.Position = UDim2.new(0.05, 0, 0, 680)
 animLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 animLabel.BorderSizePixel = 1
 animLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -216,18 +244,27 @@ animLabel.Font = Enum.Font.SourceSansBold
 animLabel.Parent = scrollFrame
 
 -- Animation Buttons
-local animNone = createSmallButton("AnimNone", "None", UDim2.new(0.05, 0, 0, 520))
+local animNone = createSmallButton("AnimNone", "None", UDim2.new(0.05, 0, 0, 710))
 animNone.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local animPulse = createSmallButton("AnimPulse", "Pulse", UDim2.new(0.36, 0, 0, 520))
-local animExpand = createSmallButton("AnimExpand", "Expand", UDim2.new(0.67, 0, 0, 520))
-local animWobble = createSmallButton("AnimWobble", "Wobble", UDim2.new(0.05, 0, 0, 553))
-local animSpin = createSmallButton("AnimSpin", "Spin", UDim2.new(0.36, 0, 0, 553))
+local animPulse = createSmallButton("AnimPulse", "Pulse", UDim2.new(0.36, 0, 0, 710))
+local animExpand = createSmallButton("AnimExpand", "Expand", UDim2.new(0.67, 0, 0, 710))
+local animWobble = createSmallButton("AnimWobble", "Wobble", UDim2.new(0.05, 0, 0, 743))
+local animSpin = createSmallButton("AnimSpin", "Spin", UDim2.new(0.36, 0, 0, 743))
+local animShake = createSmallButton("AnimShake", "Shake", UDim2.new(0.67, 0, 0, 743))
+local animBounce = createSmallButton("AnimBounce", "Bounce", UDim2.new(0.05, 0, 0, 776))
+local animTwist = createSmallButton("AnimTwist", "Twist", UDim2.new(0.36, 0, 0, 776))
+local animOrbit = createSmallButton("AnimOrbit", "Orbit", UDim2.new(0.67, 0, 0, 776))
+local animFlip = createSmallButton("AnimFlip", "Flip", UDim2.new(0.05, 0, 0, 809))
+local animStretch = createSmallButton("AnimStretch", "Stretch", UDim2.new(0.36, 0, 0, 809))
+local animSwirl = createSmallButton("AnimSwirl", "Swirl", UDim2.new(0.67, 0, 0, 809))
+local animJitter = createSmallButton("AnimJitter", "Jitter", UDim2.new(0.05, 0, 0, 842))
+local animWaveAnim = createSmallButton("AnimWaveAnim", "Wave", UDim2.new(0.36, 0, 0, 842))
 
 -- Wireframe Section
 local wireframeLabel = Instance.new("TextLabel")
 wireframeLabel.Name = "WireframeLabel"
 wireframeLabel.Size = UDim2.new(0.9, 0, 0, 25)
-wireframeLabel.Position = UDim2.new(0.05, 0, 0, 595)
+wireframeLabel.Position = UDim2.new(0.05, 0, 0, 890)
 wireframeLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 wireframeLabel.BorderSizePixel = 1
 wireframeLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -241,7 +278,7 @@ wireframeLabel.Parent = scrollFrame
 local wireframeToggle = Instance.new("TextButton")
 wireframeToggle.Name = "WireframeToggle"
 wireframeToggle.Size = UDim2.new(0.9, 0, 0, 35)
-wireframeToggle.Position = UDim2.new(0.05, 0, 0, 625)
+wireframeToggle.Position = UDim2.new(0.05, 0, 0, 920)
 wireframeToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 wireframeToggle.BorderSizePixel = 1
 wireframeToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -252,22 +289,27 @@ wireframeToggle.Font = Enum.Font.SourceSansBold
 wireframeToggle.Parent = scrollFrame
 
 -- Wireframe Shape Buttons
-local wireframeNone = createSmallButton("WireframeNone", "None", UDim2.new(0.05, 0, 0, 670))
-wireframeNone.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.36, 0, 0, 670))
-local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.67, 0, 0, 670))
-local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.05, 0, 0, 703))
+local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.05, 0, 0, 965))
+wireframeCube.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.36, 0, 0, 965))
+local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.67, 0, 0, 965))
 wireframeOcta.TextSize = 10
-local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.36, 0, 0, 703))
+local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.05, 0, 0, 998))
 wireframeTetra.TextSize = 10
-local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.67, 0, 0, 703))
+local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.36, 0, 0, 998))
 wireframeIco.TextSize = 10
+local wireframeTorus = createSmallButton("WireframeTorus", "Torus", UDim2.new(0.67, 0, 0, 998))
+local wireframeCylinder = createSmallButton("WireframeCylinder", "Cylinder", UDim2.new(0.05, 0, 0, 1031))
+wireframeCylinder.TextSize = 11
+local wireframeDodeca = createSmallButton("WireframeDodeca", "Dodecahedron", UDim2.new(0.36, 0, 0, 1031))
+wireframeDodeca.TextSize = 9
+local wireframeSphere = createSmallButton("WireframeSphere", "Sphere", UDim2.new(0.67, 0, 0, 1031))
 
 -- Hammer Mode Section
 local hammerLabel = Instance.new("TextLabel")
 hammerLabel.Name = "HammerLabel"
 hammerLabel.Size = UDim2.new(0.9, 0, 0, 25)
-hammerLabel.Position = UDim2.new(0.05, 0, 0, 745)
+hammerLabel.Position = UDim2.new(0.05, 0, 0, 1078)
 hammerLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 hammerLabel.BorderSizePixel = 1
 hammerLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -281,11 +323,11 @@ hammerLabel.Parent = scrollFrame
 local hammerToggle = Instance.new("TextButton")
 hammerToggle.Name = "HammerToggle"
 hammerToggle.Size = UDim2.new(0.9, 0, 0, 40)
-hammerToggle.Position = UDim2.new(0.05, 0, 0, 775)
+hammerToggle.Position = UDim2.new(0.05, 0, 0, 1108)
 hammerToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 hammerToggle.BorderSizePixel = 1
 hammerToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
-hammerToggle.Text = "Create Hammer (16x16 studs)"
+hammerToggle.Text = "Create 3D Hammer (16x16x3 studs)"
 hammerToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 hammerToggle.TextSize = 13
 hammerToggle.Font = Enum.Font.SourceSansBold
@@ -295,11 +337,11 @@ hammerToggle.Parent = scrollFrame
 local hammerSmash = Instance.new("TextButton")
 hammerSmash.Name = "HammerSmash"
 hammerSmash.Size = UDim2.new(0.9, 0, 0, 40)
-hammerSmash.Position = UDim2.new(0.05, 0, 0, 825)
+hammerSmash.Position = UDim2.new(0.05, 0, 0, 1158)
 hammerSmash.BackgroundColor3 = Color3.fromRGB(100, 40, 40)
 hammerSmash.BorderSizePixel = 1
 hammerSmash.BorderColor3 = Color3.fromRGB(100, 100, 100)
-hammerSmash.Text = "SMASH (Press M)"
+hammerSmash.Text = "SMASH GROUND (Press M)"
 hammerSmash.TextColor3 = Color3.fromRGB(255, 255, 255)
 hammerSmash.TextSize = 14
 hammerSmash.Font = Enum.Font.SourceSansBold
@@ -309,7 +351,7 @@ hammerSmash.Parent = scrollFrame
 local orbitButton = Instance.new("TextButton")
 orbitButton.Name = "OrbitButton"
 orbitButton.Size = UDim2.new(0.9, 0, 0, 45)
-orbitButton.Position = UDim2.new(0.05, 0, 0, 880)
+orbitButton.Position = UDim2.new(0.05, 0, 0, 1213)
 orbitButton.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
 orbitButton.BorderSizePixel = 1
 orbitButton.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -322,14 +364,14 @@ orbitButton.Parent = scrollFrame
 -- Info Label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Name = "InfoLabel"
-infoLabel.Size = UDim2.new(0.9, 0, 0, 180)
-infoLabel.Position = UDim2.new(0.05, 0, 0, 940)
+infoLabel.Size = UDim2.new(0.9, 0, 0, 310)
+infoLabel.Position = UDim2.new(0.05, 0, 0, 1273)
 infoLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 infoLabel.BorderSizePixel = 1
 infoLabel.BorderColor3 = Color3.fromRGB(80, 80, 100)
-infoLabel.Text = "Orbit Shapes: Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star\n\nAnimations (Physics-based): Pulse, Expand, Wobble, Spin\n\nWireframe: Parts form 3D shapes\n\nHammer Mode: Uses unanchored parts to form 16x16 stud hammer. Unused parts EXPLODE on smash!"
+infoLabel.Text = "🔷 20 ORBIT SHAPES: Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star, Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity, Flower, DNA, Tornado, Galaxy, Rings, Mobius\n\n✨ Perfect Polygon Formation: Parts auto-arrange into perfect geometric shapes!\n\n🎭 14 ANIMATIONS: Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist, Orbit, Flip, Stretch, Swirl, Jitter, Wave\n\n🔲 9 WIREFRAME 3D SHAPES: Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron, Torus, Cylinder, Dodecahedron, Sphere\n\n🔨 3D Hammer Mode:\n• Hammer follows block rotation (X/Z axis)\n• 16x16x3 studs with depth\n• Positioned 4 studs beside block\n• SMASHES ground on impact!\n• Unused parts EXPLODE at impact zone!"
 infoLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
-infoLabel.TextSize = 11
+infoLabel.TextSize = 10
 infoLabel.Font = Enum.Font.SourceSans
 infoLabel.TextWrapped = true
 infoLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -362,12 +404,14 @@ local function createSelectionBox(part)
 		selectionBox:Destroy()
 	end
 	
-	selectionBox = Instance.new("SelectionBox")
-	selectionBox.Adornee = part
-	selectionBox.Color3 = Color3.fromRGB(0, 255, 0)
-	selectionBox.LineThickness = 0.05
-	selectionBox.SurfaceTransparency = 0.7
-	selectionBox.Parent = workspace
+	if not hideSelectionBox then
+		selectionBox = Instance.new("SelectionBox")
+		selectionBox.Adornee = part
+		selectionBox.Color3 = Color3.fromRGB(0, 255, 0)
+		selectionBox.LineThickness = 0.05
+		selectionBox.SurfaceTransparency = 0.7
+		selectionBox.Parent = workspace
+	end
 end
 
 local function clearSelection()
@@ -454,57 +498,47 @@ local function createHammer()
 		end
 	end
 	
-	if #allParts < 10 then
-		warn("Not enough parts to create hammer! Need at least 10 unlocked unanchored parts.")
+	if #allParts < 20 then
+		warn("Not enough parts to create 3D hammer! Need at least 20 unlocked unanchored parts.")
 		return
 	end
 	
-	-- Position beside the selected part
-	local basePos = selectedPart.Position + Vector3.new(20, 0, 0)
+	-- Define 3D hammer shape positions (16 height x 16 width x 3 depth)
+	-- Handle: 2 studs wide, 12 studs tall, 3 studs deep
+	-- Head: 10 studs wide, 4 studs tall, 3 studs deep
+	local hammerPositions = {}
 	
-	-- Use parts to form hammer shape
-	-- 16x16 studs = 8 studs from center in each direction
-	local hammerShape = {}
-	
-	-- Handle (vertical column) - 2x12x2 studs
+	-- Create handle (2x12x3 vertical column) - oriented along Z axis
 	for y = 0, 11 do
-		for x = -1, 0 do
-			for z = -1, 0 do
-				table.insert(hammerShape, {
-					pos = Vector3.new(x, y, z),
-					type = "handle"
-				})
+		for z = -0.5, 0.5, 1 do
+			for x = -1, 1, 1 do
+				table.insert(hammerPositions, Vector3.new(x, y, z))
 			end
 		end
 	end
 	
-	-- Hammer head (top block) - 8x4x6 studs
+	-- Create hammer head (10x4x3 solid block at top) - perpendicular to handle
 	for y = 12, 15 do
-		for x = -4, 3 do
-			for z = -3, 2 do
-				-- Create hollow head for fewer parts
-				if y == 12 or y == 15 or x == -4 or x == 3 or z == -3 or z == 2 then
-					table.insert(hammerShape, {
-						pos = Vector3.new(x, y, z),
-						type = "head"
-					})
+		for z = -5, 4, 1 do
+			for x = -1, 1, 1 do
+				-- Make front/back and sides visible, with some interior structure
+				if x == -1 or x == 1 or z == -5 or z == 4 or y == 12 or y == 15 then
+					table.insert(hammerPositions, Vector3.new(x, y, z))
+				elseif (y == 13 or y == 14) and (z == -2 or z == 1) and x == 0 then
+					-- Interior support beams
+					table.insert(hammerPositions, Vector3.new(x, y, z))
 				end
 			end
 		end
 	end
 	
-	-- Assign parts to hammer positions
-	local partIndex = 1
-	for i, shapeData in ipairs(hammerShape) do
-		if partIndex > #allParts then break end
-		
-		local part = allParts[partIndex]
-		table.insert(hammerParts, part)
-		partIndex = partIndex + 1
+	-- Assign parts to positions
+	for i = 1, math.min(#hammerPositions, #allParts) do
+		hammerParts[i] = allParts[i]
 	end
 	
-	print("Hammer created with " .. #hammerParts .. " parts forming the structure")
-	print("Unused parts: " .. (#allParts - #hammerParts) .. " will explode on smash!")
+	print("3D Hammer created with " .. #hammerParts .. " parts")
+	print("Unused parts: " .. (#allParts - #hammerParts) .. " will explode at ground impact!")
 	
 	hammerMode = true
 	hammerLabel.Text = "Hammer Mode: ON (" .. #hammerParts .. " parts)"
@@ -513,11 +547,12 @@ local function createHammer()
 	
 	-- Store unused parts for explosion
 	local unusedParts = {}
-	for i = partIndex, #allParts do
+	for i = #hammerParts + 1, #allParts do
 		table.insert(unusedParts, allParts[i])
 	end
+	hammerStatue = {unusedParts = unusedParts, positions = hammerPositions}
 	
-	-- Idle animation - maintain hammer shape
+	-- Animation loop - maintain hammer shape with smooth transitions
 	local startTime = tick()
 	hammerConnection = RunService.Heartbeat:Connect(function()
 		if not selectedPart or not selectedPart.Parent then
@@ -526,36 +561,74 @@ local function createHammer()
 		end
 		
 		local time = tick() - startTime
-		local floatHeight = math.sin(time * 2) * 1
-		local rotationAngle = math.sin(time * 0.5) * 0.2
+		local floatHeight = math.sin(time * 1.5) * 1.5
+		local rotationAngle = math.sin(time * 0.8) * 0.15
 		
-		-- Update each hammer part position
+		-- Get block rotation for hammer orientation (X and Z axis)
+		local blockCFrame = selectedPart.CFrame
+		local blockRotation = blockCFrame - blockCFrame.Position
+		
+		-- Position hammer 4 studs in front of the block (using LookVector for forward direction)
+		local basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+		
+		-- Update each hammer part to its designated position with rotation
 		for i, part in ipairs(hammerParts) do
-			if part and part.Parent and hammerShape[i] then
-				local offset = hammerShape[i].pos
+			if part and part.Parent and hammerPositions[i] then
+				local offset = hammerPositions[i]
 				
-				-- Apply rotation
+				-- Apply idle rotation around Y axis only
 				local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
 				local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
+				local rotatedOffset = Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
 				
-				local targetPos = basePos + Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
+				-- Apply block rotation to offset (hammer rotates with block on X and Z axes)
+				local worldOffset = blockRotation * rotatedOffset
+				local targetPos = basePos + worldOffset
 				
+				-- Smooth movement with velocity
 				local direction = (targetPos - part.Position)
 				local distance = direction.Magnitude
 				
 				if distance > 0.1 then
-					part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 8, 40)
+					part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 10, 50)
 				else
 					part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 				end
 				
+				-- Keep parts stable (no spinning)
 				part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 			end
 		end
+		
+		-- Keep unused parts floating nearby around the hammer
+		for i, part in ipairs(unusedParts) do
+			if part and part.Parent then
+				local angle = (i / #unusedParts) * math.pi * 2 + time * 0.5
+				local radius = 12
+				local orbitOffset = Vector3.new(
+					math.cos(angle) * radius,
+					math.sin(time * 2 + i) * 3,
+					math.sin(angle) * radius
+				)
+				local unusedPos = basePos + blockRotation * orbitOffset
+				
+				local direction = (unusedPos - part.Position)
+				local distance = direction.Magnitude
+				
+				if distance > 0.5 then
+					part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 5, 30)
+				else
+					part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+				end
+				
+				part.AssemblyAngularVelocity = Vector3.new(
+					math.sin(time + i) * 2,
+					math.cos(time + i) * 2,
+					0
+				)
+			end
+		end
 	end)
-	
-	-- Store unused parts reference
-	hammerStatue = {unusedParts = unusedParts}
 end
 
 local function smashHammer()
@@ -569,7 +642,7 @@ local function smashHammer()
 		return
 	end
 	
-	print("HAMMER SMASH!")
+	print("🔨 HAMMER SMASH! 💥")
 	
 	-- Stop idle animation
 	if hammerConnection then
@@ -577,31 +650,19 @@ local function smashHammer()
 		hammerConnection = nil
 	end
 	
-	-- Smash animation
 	local smashStartTime = tick()
-	local smashDuration = 1.5
-	local basePos = selectedPart.Position + Vector3.new(20, 0, 0)
-	local centerPos = selectedPart.Position
-	local unusedParts = hammerStatue and hammerStatue.unusedParts or {}
+	local smashDuration = 2.0
+	local hammerPositions = hammerStatue.positions
+	local unusedParts = hammerStatue.unusedParts
+	local hasExploded = false
 	
-	-- Store hammer shape for reference
-	local hammerShape = {}
-	for y = 0, 11 do
-		for x = -1, 0 do
-			for z = -1, 0 do
-				table.insert(hammerShape, Vector3.new(x, y, z))
-			end
-		end
-	end
-	for y = 12, 15 do
-		for x = -4, 3 do
-			for z = -3, 2 do
-				if y == 12 or y == 15 or x == -4 or x == 3 or z == -3 or z == 2 then
-					table.insert(hammerShape, Vector3.new(x, y, z))
-				end
-			end
-		end
-	end
+	-- Get block rotation and positions
+	local blockCFrame = selectedPart.CFrame
+	local blockRotation = blockCFrame - blockCFrame.Position
+	local basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+	
+	-- Calculate ground position (where hammer head will hit) - adjusted for hammer length
+	local groundPos = selectedPart.Position + Vector3.new(0, -8, 0)
 	
 	hammerConnection = RunService.Heartbeat:Connect(function()
 		if not selectedPart or not selectedPart.Parent then
@@ -609,154 +670,206 @@ local function smashHammer()
 			return
 		end
 		
+		-- Update rotation in case block rotates during smash
+		blockCFrame = selectedPart.CFrame
+		blockRotation = blockCFrame - blockCFrame.Position
+		basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+		groundPos = selectedPart.Position + Vector3.new(0, -8, 0)
+		
 		local elapsed = tick() - smashStartTime
 		local progress = math.min(elapsed / smashDuration, 1)
 		
-		if progress < 0.3 then
-			-- Lift hammer up and start rotating back
-			local liftProgress = progress / 0.3
+		if progress < 0.25 then
+			-- Phase 1: Lift hammer up high and rotate to striking position
+			local liftProgress = progress / 0.25
 			local liftHeight = liftProgress * 25
-			local rotationAngle = liftProgress * math.pi * 0.5 -- Rotate 90 degrees back
+			local tiltAngle = liftProgress * (math.pi / 2) -- Rotate 90 degrees to point down
 			
 			for i, part in ipairs(hammerParts) do
-				if part and part.Parent and hammerShape[i] then
-					local offset = hammerShape[i]
+				if part and part.Parent and hammerPositions[i] then
+					local offset = hammerPositions[i]
 					
-					-- Apply rotation around pivot point (bottom of handle)
-					local pivotY = 0
-					local relativeY = offset.Y - pivotY
-					local relativeX = offset.X
+					-- Rotate hammer to point downward
+					local tiltedY = offset.Y * math.cos(tiltAngle) - offset.Z * math.sin(tiltAngle)
+					local tiltedZ = offset.Y * math.sin(tiltAngle) + offset.Z * math.cos(tiltAngle)
+					local tiltedOffset = Vector3.new(offset.X, tiltedY + liftHeight, tiltedZ)
 					
-					-- Rotate in XY plane
-					local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
-					local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+					local worldOffset = blockRotation * tiltedOffset
+					local partTargetPos = basePos + worldOffset
 					
-					local targetPos = basePos + Vector3.new(rotatedX, rotatedY + liftHeight, offset.Z)
-					
-					local direction = (targetPos - part.Position)
-					part.AssemblyLinearVelocity = direction * 10
+					local direction = (partTargetPos - part.Position)
+					part.AssemblyLinearVelocity = direction * 15
 					part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 				end
 			end
 			
-		elseif progress < 0.7 then
-			-- Smash down with rotation - hammer swings forward
-			local smashProgress = (progress - 0.3) / 0.4
-			local smashHeight = 25 - (smashProgress * 30) -- Go from +25 to -5
-			local rotationAngle = (math.pi * 0.5) - (smashProgress * math.pi * 0.6) -- Swing forward 108 degrees
+			-- Keep unused parts orbiting during windup
+			for i, part in ipairs(unusedParts) do
+				if part and part.Parent then
+					local angle = (i / #unusedParts) * math.pi * 2 + elapsed * 2
+					local radius = 12
+					local orbitOffset = Vector3.new(
+						math.cos(angle) * radius,
+						math.sin(elapsed * 3 + i) * 4,
+						math.sin(angle) * radius
+					)
+					local unusedPos = basePos + blockRotation * orbitOffset
+					
+					local direction = (unusedPos - part.Position)
+					part.AssemblyLinearVelocity = direction * 8
+					part.AssemblyAngularVelocity = Vector3.new(
+						math.sin(elapsed + i) * 4,
+						math.cos(elapsed + i) * 4,
+						0
+					)
+				end
+			end
 			
-			-- Move hammer toward target as it swings
-			local horizontalProgress = smashProgress * 20 // Move 20 studs toward center
-			local hammerCenterPos = basePos - Vector3.new(horizontalProgress, 0, 0)
+		elseif progress < 0.65 then
+			-- Phase 2: SMASH DOWN TO GROUND with hammer rotated
+			local smashProgress = (progress - 0.25) / 0.4
+			local currentHeight = 25 - (smashProgress * 41) -- Go from +25 to -16 (below ground)
+			local tiltAngle = math.pi / 2 -- Keep rotated 90 degrees
 			
 			for i, part in ipairs(hammerParts) do
-				if part and part.Parent and hammerShape[i] then
-					local offset = hammerShape[i]
+				if part and part.Parent and hammerPositions[i] then
+					local offset = hammerPositions[i]
 					
-					-- Apply rotation around pivot point
-					local pivotY = 0
-					local relativeY = offset.Y - pivotY
-					local relativeX = offset.X
+					-- Keep hammer rotated downward
+					local tiltedY = offset.Y * math.cos(tiltAngle) - offset.Z * math.sin(tiltAngle)
+					local tiltedZ = offset.Y * math.sin(tiltAngle) + offset.Z * math.cos(tiltAngle)
+					local tiltedOffset = Vector3.new(offset.X, tiltedY + currentHeight, tiltedZ)
 					
-					local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
-					local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+					local worldOffset = blockRotation * tiltedOffset
+					local partTargetPos = basePos + worldOffset
 					
-					local targetPos = hammerCenterPos + Vector3.new(rotatedX, rotatedY + smashHeight, offset.Z)
-					
-					local direction = (targetPos - part.Position)
-					part.AssemblyLinearVelocity = direction * 20
+					local direction = (partTargetPos - part.Position)
+					part.AssemblyLinearVelocity = direction * 30
 					part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 				end
 			end
 			
-			-- EXPLODE UNUSED PARTS on impact
-			if smashProgress > 0.5 then
+			-- Pull unused parts toward impact zone
+			if smashProgress > 0.3 then
+				for i, part in ipairs(unusedParts) do
+					if part and part.Parent then
+						local direction = (groundPos - part.Position)
+						part.AssemblyLinearVelocity = direction.Unit * 40
+					end
+				end
+			end
+			
+			-- EXPLODE UNUSED PARTS at impact moment (when hammer hits ground)
+			if smashProgress > 0.8 and not hasExploded then
+				hasExploded = true
+				print("💥 GROUND IMPACT EXPLOSION! " .. #unusedParts .. " parts exploding from impact zone!")
+				
 				for _, part in ipairs(unusedParts) do
 					if part and part.Parent then
-						local directionFromCenter = (part.Position - centerPos).Unit
-						local distance = (part.Position - centerPos).Magnitude
-						local force = math.max(0, 1 - (distance / 80)) * 150
+						-- Calculate direction from ground impact point
+						local directionFromImpact = (part.Position - groundPos).Unit
+						local distance = (part.Position - groundPos).Magnitude
+						local explosionForce = math.max(15, 1 - (distance / 100)) * 200
 						
-						part.AssemblyLinearVelocity = directionFromCenter * force + Vector3.new(0, 50, 0)
+						-- Launch parts outward from ground impact with massive force
+						part.AssemblyLinearVelocity = directionFromImpact * explosionForce + Vector3.new(
+							math.random(-40, 40),
+							math.random(80, 150), -- High upward force
+							math.random(-40, 40)
+						)
+						
+						-- Crazy spinning
 						part.AssemblyAngularVelocity = Vector3.new(
-							math.random(-15, 15),
-							math.random(-15, 15),
-							math.random(-15, 15)
+							math.random(-25, 25),
+							math.random(-25, 25),
+							math.random(-25, 25)
 						)
 					end
 				end
 			end
 			
 		else
-			-- Return to idle with rotation back to vertical
-			local returnProgress = (progress - 0.7) / 0.3
-			local returnHeight = -5 + (returnProgress * 11) // Return from -5 to +6
-			local rotationAngle = (-math.pi * 0.1) + (returnProgress * math.pi * 0.1) // Return to 0 rotation
-			local horizontalReturn = 20 - (returnProgress * 20) // Return to original position
-			local hammerCenterPos = basePos - Vector3.new(horizontalReturn, 0, 0)
+			-- Phase 3: Return to idle position
+			if hammerConnection then
+				hammerConnection:Disconnect()
+				hammerConnection = nil
+			end
 			
-			if returnProgress >= 1 then
-				-- Fully returned, restart idle animation
-				if hammerConnection then
-					hammerConnection:Disconnect()
-					hammerConnection = nil
+			-- Restart idle animation
+			local idleStartTime = tick()
+			
+			hammerConnection = RunService.Heartbeat:Connect(function()
+				if not selectedPart or not selectedPart.Parent then
+					destroyHammer()
+					return
 				end
 				
-				local idleStartTime = tick()
+				local time = tick() - idleStartTime
+				local floatHeight = math.sin(time * 1.5) * 1.5
+				local rotationAngle = math.sin(time * 0.8) * 0.15
 				
-				hammerConnection = RunService.Heartbeat:Connect(function()
-					if not selectedPart or not selectedPart.Parent then
-						destroyHammer()
-						return
-					end
-					
-					local time = tick() - idleStartTime
-					local floatHeight = math.sin(time * 2) * 1
-					local rotationAngle = math.sin(time * 0.5) * 0.2
-					
-					for i, part in ipairs(hammerParts) do
-						if part and part.Parent and hammerShape[i] then
-							local offset = hammerShape[i]
-							local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
-							local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
-							local targetPos = basePos + Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
-							
-							local direction = (targetPos - part.Position)
-							local distance = direction.Magnitude
-							
-							if distance > 0.1 then
-								part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 8, 40)
-							else
-								part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-							end
-							
-							part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-						end
-					end
-				end)
+				-- Update rotation
+				blockCFrame = selectedPart.CFrame
+				blockRotation = blockCFrame - blockCFrame.Position
+				basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
 				
-				print("Hammer returned to idle position")
-			else
-				-- Still returning
 				for i, part in ipairs(hammerParts) do
-					if part and part.Parent and hammerShape[i] then
-						local offset = hammerShape[i]
+					if part and part.Parent and hammerPositions[i] then
+						local offset = hammerPositions[i]
 						
-						local pivotY = 0
-						local relativeY = offset.Y - pivotY
-						local relativeX = offset.X
+						-- Apply idle rotation around Y axis only
+						local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
+						local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
+						local rotatedOffset = Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
 						
-						local rotatedY = relativeY * math.cos(rotationAngle) - relativeX * math.sin(rotationAngle)
-						local rotatedX = relativeY * math.sin(rotationAngle) + relativeX * math.cos(rotationAngle)
+						-- Apply block rotation
+						local worldOffset = blockRotation * rotatedOffset
+						local partTargetPos = basePos + worldOffset
 						
-						local targetPos = hammerCenterPos + Vector3.new(rotatedX, rotatedY + returnHeight, offset.Z)
+						local direction = (partTargetPos - part.Position)
+						local distance = direction.Magnitude
 						
-						local direction = (targetPos - part.Position)
-						part.AssemblyLinearVelocity = direction * 15
+						if distance > 0.1 then
+							part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 10, 50)
+						else
+							part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+						end
+						
 						part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 					end
 				end
-			end
+				
+				-- Return unused parts to orbit
+				for i, part in ipairs(unusedParts) do
+					if part and part.Parent then
+						local angle = (i / #unusedParts) * math.pi * 2 + time * 0.5
+						local radius = 12
+						local orbitOffset = Vector3.new(
+							math.cos(angle) * radius,
+							math.sin(time * 2 + i) * 3,
+							math.sin(angle) * radius
+						)
+						local unusedPos = basePos + blockRotation * orbitOffset
+						
+						local direction = (unusedPos - part.Position)
+						local distance = direction.Magnitude
+						
+						if distance > 1 then
+							part.AssemblyLinearVelocity = direction.Unit * math.min(distance * 3, 25)
+						else
+							part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+						end
+						
+						part.AssemblyAngularVelocity = Vector3.new(
+							math.sin(time + i) * 2,
+							math.cos(time + i) * 2,
+							0
+						)
+					end
+				end
+			end)
+			
+			print("✅ Hammer returned to idle position")
 		end
 	end)
 end
@@ -817,6 +930,129 @@ local wireframeShapes = {
 			{5,9},{5,10},{5,7}, {6,9},{6,10},{6,8},
 			{7,11},{7,12}, {8,11},{8,12}
 		}
+	},
+	Torus = {
+		vertices = (function()
+			local verts = {}
+			local majorRadius = 1.2
+			local minorRadius = 0.4
+			local majorSegs = 16
+			local minorSegs = 8
+			for i = 0, majorSegs - 1 do
+				local theta = (i / majorSegs) * math.pi * 2
+				for j = 0, minorSegs - 1 do
+					local phi = (j / minorSegs) * math.pi * 2
+					local x = (majorRadius + minorRadius * math.cos(phi)) * math.cos(theta)
+					local y = minorRadius * math.sin(phi)
+					local z = (majorRadius + minorRadius * math.cos(phi)) * math.sin(theta)
+					table.insert(verts, Vector3.new(x, y, z))
+				end
+			end
+			return verts
+		end)(),
+		edges = (function()
+			local edges = {}
+			local majorSegs = 16
+			local minorSegs = 8
+			for i = 0, majorSegs - 1 do
+				for j = 0, minorSegs - 1 do
+					local curr = i * minorSegs + j + 1
+					local nextMinor = i * minorSegs + ((j + 1) % minorSegs) + 1
+					local nextMajor = ((i + 1) % majorSegs) * minorSegs + j + 1
+					table.insert(edges, {curr, nextMinor})
+					table.insert(edges, {curr, nextMajor})
+				end
+			end
+			return edges
+		end)()
+	},
+	Cylinder = {
+		vertices = (function()
+			local verts = {}
+			local radius = 1
+			local height = 2
+			local segments = 12
+			-- Bottom circle
+			for i = 0, segments - 1 do
+				local angle = (i / segments) * math.pi * 2
+				table.insert(verts, Vector3.new(math.cos(angle) * radius, -height/2, math.sin(angle) * radius))
+			end
+			-- Top circle
+			for i = 0, segments - 1 do
+				local angle = (i / segments) * math.pi * 2
+				table.insert(verts, Vector3.new(math.cos(angle) * radius, height/2, math.sin(angle) * radius))
+			end
+			return verts
+		end)(),
+		edges = (function()
+			local edges = {}
+			local segments = 12
+			-- Bottom circle edges
+			for i = 1, segments do
+				table.insert(edges, {i, (i % segments) + 1})
+			end
+			-- Top circle edges
+			for i = 1, segments do
+				table.insert(edges, {i + segments, ((i % segments) + 1) + segments})
+			end
+			-- Vertical edges connecting top and bottom
+			for i = 1, segments do
+				table.insert(edges, {i, i + segments})
+			end
+			return edges
+		end)()
+	},
+	Dodecahedron = {
+		vertices = (function()
+			local phi = (1 + math.sqrt(5)) / 2
+			return {
+				Vector3.new(1, 1, 1), Vector3.new(1, 1, -1), Vector3.new(1, -1, 1), Vector3.new(1, -1, -1),
+				Vector3.new(-1, 1, 1), Vector3.new(-1, 1, -1), Vector3.new(-1, -1, 1), Vector3.new(-1, -1, -1),
+				Vector3.new(0, phi, 1/phi), Vector3.new(0, phi, -1/phi), Vector3.new(0, -phi, 1/phi), Vector3.new(0, -phi, -1/phi),
+				Vector3.new(1/phi, 0, phi), Vector3.new(1/phi, 0, -phi), Vector3.new(-1/phi, 0, phi), Vector3.new(-1/phi, 0, -phi),
+				Vector3.new(phi, 1/phi, 0), Vector3.new(phi, -1/phi, 0), Vector3.new(-phi, 1/phi, 0), Vector3.new(-phi, -1/phi, 0)
+			}
+		end)(),
+		edges = {
+			{1,9},{1,13},{1,17},{2,10},{2,14},{2,17},{3,11},{3,13},{3,18},{4,12},{4,14},{4,18},
+			{5,9},{5,15},{5,19},{6,10},{6,16},{6,19},{7,11},{7,15},{7,20},{8,12},{8,16},{8,20},
+			{9,10},{11,12},{13,15},{14,16},{17,18},{19,20}
+		}
+	},
+	Sphere = {
+		vertices = (function()
+			local verts = {}
+			local segments = 12
+			local rings = 6
+			for ring = 0, rings do
+				local phi = (ring / rings) * math.pi
+				for seg = 0, segments - 1 do
+					local theta = (seg / segments) * math.pi * 2
+					local x = math.sin(phi) * math.cos(theta) * 1.2
+					local y = math.cos(phi) * 1.2
+					local z = math.sin(phi) * math.sin(theta) * 1.2
+					table.insert(verts, Vector3.new(x, y, z))
+				end
+			end
+			return verts
+		end)(),
+		edges = (function()
+			local edges = {}
+			local segments = 12
+			local rings = 6
+			for ring = 0, rings - 1 do
+				for seg = 0, segments - 1 do
+					local curr = ring * segments + seg + 1
+					local nextSeg = ring * segments + ((seg + 1) % segments) + 1
+					local nextRing = (ring + 1) * segments + seg + 1
+					table.insert(edges, {curr, nextSeg})
+					if ring < rings - 1 then
+						table.insert(edges, {curr, nextRing})
+					end
+				end
+			end
+			return edges
+		end)()
 	}
 }
 
@@ -858,7 +1094,7 @@ local function startOrbiting()
 	-- Orbit parameters for each part
 	local orbitData = {}
 	
-	if wireframeMode and wireframeShape ~= "None" then
+	if wireframeMode then
 		-- Wireframe mode: assign parts to edges of a 3D shape
 		local shape = wireframeShapes[wireframeShape]
 		
@@ -921,8 +1157,9 @@ local function startOrbiting()
 			y = height + math.sin(time * 2) * 2
 			
 		elseif orbitShape == "Sphere" then
-			local phi = (index / total) * math.pi
-			local theta = angle
+			-- True 3D sphere distribution using spherical coordinates
+			local phi = math.acos(1 - 2 * (index / total)) -- Polar angle
+			local theta = angle -- Azimuthal angle
 			x = radius * math.sin(phi) * math.cos(theta)
 			y = radius * math.cos(phi)
 			z = radius * math.sin(phi) * math.sin(theta)
@@ -972,6 +1209,125 @@ local function startOrbiting()
 			x = math.cos(angle) * r
 			z = math.sin(angle) * r
 			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Pentagon" then
+			-- Perfect pentagon formation
+			local sides = 5
+			local sideIndex = math.floor((index - 1) % sides)
+			local posOnSide = ((index - 1) % sides) + ((index - 1) / sides) % 1
+			local perfectAngle = (sideIndex / sides) * math.pi * 2 - math.pi / 2
+			x = math.cos(perfectAngle) * radius
+			z = math.sin(perfectAngle) * radius
+			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Hexagon" then
+			-- Perfect hexagon formation
+			local sides = 6
+			local sideIndex = math.floor((index - 1) % sides)
+			local perfectAngle = (sideIndex / sides) * math.pi * 2
+			x = math.cos(perfectAngle) * radius
+			z = math.sin(perfectAngle) * radius
+			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Octagon" then
+			-- Perfect octagon formation
+			local sides = 8
+			local sideIndex = math.floor((index - 1) % sides)
+			local perfectAngle = (sideIndex / sides) * math.pi * 2
+			x = math.cos(perfectAngle) * radius
+			z = math.sin(perfectAngle) * radius
+			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Diamond" then
+			-- Diamond shape (4 pointed star in 3D)
+			local t = (index / total) * 4
+			local section = math.floor(t)
+			local progress = t - section
+			
+			if section == 0 then
+				x = progress * radius
+				y = (1 - progress) * radius * 1.5
+				z = 0
+			elseif section == 1 then
+				x = (1 - progress) * radius
+				y = -progress * radius * 1.5
+				z = 0
+			elseif section == 2 then
+				x = -progress * radius
+				y = -(1 - progress) * radius * 1.5
+				z = 0
+			else
+				x = -(1 - progress) * radius
+				y = progress * radius * 1.5
+				z = 0
+			end
+			y = y + height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Heart" then
+			-- Heart shape (parametric)
+			local t = angle
+			x = 16 * math.sin(t)^3 * (radius / 20)
+			z = (13 * math.cos(t) - 5 * math.cos(2*t) - 2 * math.cos(3*t) - math.cos(4*t)) * (radius / 20)
+			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Infinity" then
+			-- Infinity symbol (lemniscate)
+			local scale = radius / 3
+			x = scale * math.cos(angle) / (1 + math.sin(angle)^2)
+			z = scale * math.cos(angle) * math.sin(angle) / (1 + math.sin(angle)^2)
+			y = height + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Flower" then
+			-- Flower pattern (rose curve)
+			local petals = 6
+			local r = radius * math.cos(petals * angle)
+			x = r * math.cos(angle)
+			z = r * math.sin(angle)
+			y = height + math.sin(time * 2 + angle * 2) * 3
+			
+		elseif orbitShape == "DNA" then
+			-- DNA double helix
+			local helixRadius = radius * 0.5
+			local strand = (index % 2 == 0) and 1 or -1
+			x = math.cos(angle + strand * math.pi) * helixRadius
+			z = math.sin(angle + strand * math.pi) * helixRadius
+			y = (angle / (math.pi * 2)) * 20 - 10
+			
+		elseif orbitShape == "Tornado" then
+			-- Tornado/vortex shape
+			local heightPos = (index / total) * 15 - 7.5
+			local radiusAtHeight = radius * (1 - math.abs(heightPos) / 10)
+			x = math.cos(angle + heightPos * 0.5) * radiusAtHeight
+			z = math.sin(angle + heightPos * 0.5) * radiusAtHeight
+			y = heightPos + height + math.sin(time * 3) * 2
+			
+		elseif orbitShape == "Galaxy" then
+			-- Spiral galaxy arms
+			local spiralAngle = angle + (index / total) * math.pi * 8
+			local spiralRadius = radius * (0.3 + (index / total) * 0.7)
+			x = math.cos(spiralAngle) * spiralRadius
+			z = math.sin(spiralAngle) * spiralRadius
+			y = height + math.sin(spiralAngle * 2) * 2 + math.cos(time * 2) * 1
+			
+		elseif orbitShape == "Rings" then
+			-- Multiple concentric rings
+			local ringIndex = math.floor((index - 1) / (total / 3))
+			local ringRadius = radius * (0.5 + ringIndex * 0.3)
+			local tilt = ringIndex * math.pi / 6
+			local localX = math.cos(angle) * ringRadius
+			local localZ = math.sin(angle) * ringRadius
+			x = localX
+			y = height + localZ * math.sin(tilt) + math.sin(time * 2) * 1
+			z = localZ * math.cos(tilt)
+			
+		elseif orbitShape == "Mobius" then
+			-- Mobius strip
+			local u = angle
+			local v = ((index / total) - 0.5) * 0.4
+			local mobiusRadius = radius * 0.8
+			x = (mobiusRadius + v * math.cos(u / 2)) * math.cos(u)
+			y = v * math.sin(u / 2) + height + math.sin(time * 2) * 1
+			z = (mobiusRadius + v * math.cos(u / 2)) * math.sin(u)
 		end
 		
 		return centerPos + Vector3.new(x, y, z)
@@ -1013,7 +1369,7 @@ local function startOrbiting()
 			if part and part.Parent then
 				local targetPos
 				
-				if data.wireframe and wireframeShape ~= "None" then
+				if data.wireframe then
 					-- Wireframe mode
 					targetPos = calculateWireframePosition(centerPos, data, time)
 				else
@@ -1051,6 +1407,81 @@ local function startOrbiting()
 							10,
 							math.cos(time * 2) * 5
 						)
+						
+					elseif animationMode == "Shake" then
+						local shakeX = math.random(-1, 1) * 0.5
+						local shakeY = math.random(-1, 1) * 0.5
+						local shakeZ = math.random(-1, 1) * 0.5
+						targetPos = targetPos + Vector3.new(shakeX, shakeY, shakeZ)
+						
+					elseif animationMode == "Bounce" then
+						local bounceHeight = math.abs(math.sin(time * 5 + data.phaseOffset)) * 5
+						targetPos = targetPos + Vector3.new(0, bounceHeight, 0)
+						
+					elseif animationMode == "Twist" then
+						local twistAngle = math.sin(time * 2) * 0.5
+						local direction = (targetPos - centerPos)
+						local distance = direction.Magnitude
+						local currentAngle = math.atan2(direction.Z, direction.X)
+						local newAngle = currentAngle + twistAngle
+						targetPos = centerPos + Vector3.new(
+							math.cos(newAngle) * distance,
+							direction.Y,
+							math.sin(newAngle) * distance
+						)
+						
+					elseif animationMode == "Orbit" then
+						-- Parts orbit around their own position
+						local orbitRadius = 2
+						local orbitAngle = time * 3 + data.phaseOffset
+						local orbitOffset = Vector3.new(
+							math.cos(orbitAngle) * orbitRadius,
+							math.sin(orbitAngle * 1.5) * orbitRadius,
+							math.sin(orbitAngle) * orbitRadius
+						)
+						targetPos = targetPos + orbitOffset
+						
+					elseif animationMode == "Flip" then
+						-- Flip parts end over end
+						part.AssemblyAngularVelocity = Vector3.new(
+							15 * math.sin(time + data.phaseOffset),
+							5,
+							15 * math.cos(time + data.phaseOffset)
+						)
+						
+					elseif animationMode == "Stretch" then
+						-- Stretch outward and contract
+						local stretch = 1 + math.sin(time * 2 + data.phaseOffset) * 0.6
+						local direction = (targetPos - centerPos).Unit
+						local baseDistance = (targetPos - centerPos).Magnitude
+						targetPos = centerPos + direction * baseDistance * stretch
+						
+					elseif animationMode == "Swirl" then
+						-- Swirl around center with varying height
+						local swirlAngle = time * 2
+						local direction = (targetPos - centerPos)
+						local distance = direction.Magnitude
+						local currentAngle = math.atan2(direction.Z, direction.X)
+						local newAngle = currentAngle + swirlAngle * 0.3
+						targetPos = centerPos + Vector3.new(
+							math.cos(newAngle) * distance,
+							direction.Y + math.sin(time * 3 + data.phaseOffset) * 4,
+							math.sin(newAngle) * distance
+						)
+						
+					elseif animationMode == "Jitter" then
+						-- Rapid jittery movement
+						local jitterAmount = 1.5
+						local jitterSpeed = 15
+						local jitterX = math.sin(time * jitterSpeed + data.phaseOffset) * jitterAmount
+						local jitterY = math.cos(time * jitterSpeed * 1.3 + data.phaseOffset) * jitterAmount
+						local jitterZ = math.sin(time * jitterSpeed * 0.8 + data.phaseOffset) * jitterAmount
+						targetPos = targetPos + Vector3.new(jitterX, jitterY, jitterZ)
+						
+					elseif animationMode == "Wave" then
+						-- Wave motion through all parts
+						local waveOffset = math.sin(time * 3 - (index / total) * math.pi * 2) * 5
+						targetPos = targetPos + Vector3.new(0, waveOffset, 0)
 					end
 				end
 				
@@ -1098,6 +1529,28 @@ selectionButton.MouseButton1Click:Connect(function()
 	end
 end)
 
+-- Hide Selection Box Toggle Event
+hideSelectionToggle.MouseButton1Click:Connect(function()
+	hideSelectionBox = not hideSelectionBox
+	
+	if hideSelectionBox then
+		hideSelectionToggle.Text = "Hide Selection Box: ON"
+		hideSelectionToggle.BackgroundColor3 = Color3.fromRGB(50, 100, 150)
+		-- Remove existing selection box if present
+		if selectionBox then
+			selectionBox:Destroy()
+			selectionBox = nil
+		end
+	else
+		hideSelectionToggle.Text = "Hide Selection Box: OFF"
+		hideSelectionToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		-- Recreate selection box if part is selected
+		if selectedPart and selectedPart.Parent then
+			createSelectionBox(selectedPart)
+		end
+	end
+end)
+
 -- Gap Mode Button Events
 local function updateGapModeButtons(selectedMode)
 	gapMode = selectedMode
@@ -1121,7 +1574,7 @@ gapModePerPart.MouseButton1Click:Connect(function() updateGapModeButtons("GapPer
 gapModeBetween.MouseButton1Click:Connect(function() updateGapModeButtons("GapBetweenParts") end)
 
 -- Orbit Shape Button Events
-local shapeButtons = {shapeCircle, shapeSphere, shapeCube, shapeSpiral, shapeWave, shapeHelix, shapeFigure8, shapeStar}
+local shapeButtons = {shapeCircle, shapeSphere, shapeCube, shapeSpiral, shapeWave, shapeHelix, shapeFigure8, shapeStar, shapePentagon, shapeHexagon, shapeOctagon, shapeDiamond, shapeHeart, shapeInfinity, shapeFlower, shapeDNA, shapeTornado, shapeGalaxy, shapeRings, shapeMobius}
 
 local function updateOrbitShape(selectedShape, buttonClicked)
 	orbitShape = selectedShape
@@ -1142,9 +1595,21 @@ shapeWave.MouseButton1Click:Connect(function() updateOrbitShape("Wave", shapeWav
 shapeHelix.MouseButton1Click:Connect(function() updateOrbitShape("Helix", shapeHelix) end)
 shapeFigure8.MouseButton1Click:Connect(function() updateOrbitShape("Figure8", shapeFigure8) end)
 shapeStar.MouseButton1Click:Connect(function() updateOrbitShape("Star", shapeStar) end)
+shapePentagon.MouseButton1Click:Connect(function() updateOrbitShape("Pentagon", shapePentagon) end)
+shapeHexagon.MouseButton1Click:Connect(function() updateOrbitShape("Hexagon", shapeHexagon) end)
+shapeOctagon.MouseButton1Click:Connect(function() updateOrbitShape("Octagon", shapeOctagon) end)
+shapeDiamond.MouseButton1Click:Connect(function() updateOrbitShape("Diamond", shapeDiamond) end)
+shapeHeart.MouseButton1Click:Connect(function() updateOrbitShape("Heart", shapeHeart) end)
+shapeInfinity.MouseButton1Click:Connect(function() updateOrbitShape("Infinity", shapeInfinity) end)
+shapeFlower.MouseButton1Click:Connect(function() updateOrbitShape("Flower", shapeFlower) end)
+shapeDNA.MouseButton1Click:Connect(function() updateOrbitShape("DNA", shapeDNA) end)
+shapeTornado.MouseButton1Click:Connect(function() updateOrbitShape("Tornado", shapeTornado) end)
+shapeGalaxy.MouseButton1Click:Connect(function() updateOrbitShape("Galaxy", shapeGalaxy) end)
+shapeRings.MouseButton1Click:Connect(function() updateOrbitShape("Rings", shapeRings) end)
+shapeMobius.MouseButton1Click:Connect(function() updateOrbitShape("Mobius", shapeMobius) end)
 
 -- Animation Mode Button Events
-local animButtons = {animNone, animPulse, animExpand, animWobble, animSpin}
+local animButtons = {animNone, animPulse, animExpand, animWobble, animSpin, animShake, animBounce, animTwist, animOrbit, animFlip, animStretch, animSwirl, animJitter, animWaveAnim}
 
 local function updateAnimationMode(selectedAnim, buttonClicked)
 	animationMode = selectedAnim
@@ -1162,16 +1627,20 @@ animPulse.MouseButton1Click:Connect(function() updateAnimationMode("Pulse", anim
 animExpand.MouseButton1Click:Connect(function() updateAnimationMode("Expand", animExpand) end)
 animWobble.MouseButton1Click:Connect(function() updateAnimationMode("Wobble", animWobble) end)
 animSpin.MouseButton1Click:Connect(function() updateAnimationMode("Spin", animSpin) end)
+animShake.MouseButton1Click:Connect(function() updateAnimationMode("Shake", animShake) end)
+animBounce.MouseButton1Click:Connect(function() updateAnimationMode("Bounce", animBounce) end)
+animTwist.MouseButton1Click:Connect(function() updateAnimationMode("Twist", animTwist) end)
+animOrbit.MouseButton1Click:Connect(function() updateAnimationMode("Orbit", animOrbit) end)
+animFlip.MouseButton1Click:Connect(function() updateAnimationMode("Flip", animFlip) end)
+animStretch.MouseButton1Click:Connect(function() updateAnimationMode("Stretch", animStretch) end)
+animSwirl.MouseButton1Click:Connect(function() updateAnimationMode("Swirl", animSwirl) end)
+animJitter.MouseButton1Click:Connect(function() updateAnimationMode("Jitter", animJitter) end)
+animWaveAnim.MouseButton1Click:Connect(function() updateAnimationMode("Wave", animWaveAnim) end)
 
 -- Wireframe Toggle Event
 wireframeToggle.MouseButton1Click:Connect(function()
 	wireframeMode = not wireframeMode
 	if wireframeMode then
-		if wireframeShape == "None" then
-			wireframeShape = "Cube"
-			wireframeNone.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-			wireframeCube.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-		end
 		wireframeLabel.Text = "Wireframe Mode: ON - " .. wireframeShape
 		wireframeToggle.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
 	else
@@ -1181,19 +1650,12 @@ wireframeToggle.MouseButton1Click:Connect(function()
 end)
 
 -- Wireframe Shape Button Events
-local wireframeButtons = {wireframeNone, wireframeCube, wireframePyramid, wireframeOcta, wireframeTetra, wireframeIco}
+local wireframeButtons = {wireframeCube, wireframePyramid, wireframeOcta, wireframeTetra, wireframeIco, wireframeTorus, wireframeCylinder, wireframeDodeca, wireframeSphere}
 
 local function updateWireframeShape(selectedShape, buttonClicked)
 	wireframeShape = selectedShape
-	
-	if selectedShape == "None" then
-		wireframeMode = false
-		wireframeLabel.Text = "Wireframe Mode: OFF"
-		wireframeToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	else
-		wireframeMode = true
+	if wireframeMode then
 		wireframeLabel.Text = "Wireframe Mode: ON - " .. wireframeShape
-		wireframeToggle.BackgroundColor3 = Color3.fromRGB(100, 50, 150)
 	end
 	
 	for _, btn in ipairs(wireframeButtons) do
@@ -1203,12 +1665,15 @@ local function updateWireframeShape(selectedShape, buttonClicked)
 	buttonClicked.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
 end
 
-wireframeNone.MouseButton1Click:Connect(function() updateWireframeShape("None", wireframeNone) end)
 wireframeCube.MouseButton1Click:Connect(function() updateWireframeShape("Cube", wireframeCube) end)
 wireframePyramid.MouseButton1Click:Connect(function() updateWireframeShape("Pyramid", wireframePyramid) end)
 wireframeOcta.MouseButton1Click:Connect(function() updateWireframeShape("Octahedron", wireframeOcta) end)
 wireframeTetra.MouseButton1Click:Connect(function() updateWireframeShape("Tetrahedron", wireframeTetra) end)
 wireframeIco.MouseButton1Click:Connect(function() updateWireframeShape("Icosahedron", wireframeIco) end)
+wireframeTorus.MouseButton1Click:Connect(function() updateWireframeShape("Torus", wireframeTorus) end)
+wireframeCylinder.MouseButton1Click:Connect(function() updateWireframeShape("Cylinder", wireframeCylinder) end)
+wireframeDodeca.MouseButton1Click:Connect(function() updateWireframeShape("Dodecahedron", wireframeDodeca) end)
+wireframeSphere.MouseButton1Click:Connect(function() updateWireframeShape("Sphere", wireframeSphere) end)
 
 -- Hammer Mode Events
 hammerToggle.MouseButton1Click:Connect(function()
@@ -1259,15 +1724,33 @@ player.CharacterAdded:Connect(function()
 	destroyHammer()
 end)
 
-print("Orbit Parts Script with Wireframe and Hammer Mode Loaded!")
+print("🌟 ULTIMATE Orbit Parts Script with TONS of Features! 🌟")
 print("Instructions:")
 print("1. Click 'Enable Selection Mode'")
 print("2. Click on an unlocked part to select it")
 print("3. Adjust orbit distance, speed, and gap settings")
-print("4. Choose orbit shape and physics animation")
-print("5. Toggle Wireframe Mode to form 3D shapes with parts")
-print("6. Toggle Hammer Mode - parts form a 16x16 stud hammer!")
-print("7. Press M or click 'SMASH' to strike - unused parts EXPLODE!")
+print("4. Choose from 20 ORBIT SHAPES!")
+print("5. Apply 14 DIFFERENT ANIMATIONS!")
+print("6. Toggle Wireframe Mode for 9 3D shapes")
+print("7. Create 3D Hammer (16x16x3 studs) - positioned 4 studs beside block")
+print("8. Hammer follows block rotation on X and Z axes")
+print("9. Press M or click 'SMASH GROUND' - unused parts EXPLODE at impact!")
 print("")
-print("Wireframe Shapes: Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron")
-print("Hammer: Made FROM unanchored parts! Unused parts explode from impact point!")
+print("✨✨ NEW FEATURES ✨✨")
+print("🔷 20 ORBIT SHAPES:")
+print("   Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star")
+print("   Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity")
+print("   Flower, DNA, Tornado, Galaxy, Rings, Mobius")
+print("")
+print("🎭 14 ANIMATIONS:")
+print("   Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist")
+print("   Orbit, Flip, Stretch, Swirl, Jitter, Wave")
+print("")
+print("🔲 9 WIREFRAME 3D SHAPES:")
+print("   Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron")
+print("   Torus, Cylinder, Dodecahedron, Sphere")
+print("")
+print("🔨 3D Hammer with depth - follows block rotation")
+print("💥 Ground Impact - hammer smashes down, parts explode at impact zone!")
+print("👁️ Hide Selection Box toggle - enjoy unobstructed views!")
+print("📐 Perfect Polygon Formation - parts auto-arrange perfectly")
