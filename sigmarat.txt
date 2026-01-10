@@ -22,8 +22,8 @@ local orbitDistance = 10
 local orbitSpeed = 1
 local gapMode = "None" -- "None", "GapPerPart", "GapBetweenParts"
 local gapValue = 2
-local orbitShape = "Circle" -- "Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star", "Pentagon", "Hexagon", "Octagon", "Diamond", "Heart", "Infinity", "Flower", "DNA", "Tornado", "Galaxy", "Rings", "Mobius"
-local animationMode = "None" -- "None", "Pulse", "Expand", "Wobble", "Spin", "Shake", "Bounce", "Twist", "Orbit", "Flip", "Stretch", "Swirl", "Jitter", "Wave"
+local orbitShape = "Circle" -- 50 SHAPES TOTAL!
+local animationMode = "None" -- 26 ANIMATIONS TOTAL!
 local wireframeMode = false
 local wireframeShape = "Cube" -- "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron", "Torus", "Cylinder", "Dodecahedron", "Sphere"
 local hammerMode = false
@@ -58,7 +58,7 @@ scrollFrame.Position = UDim2.new(0, 0, 0, 30)
 scrollFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 scrollFrame.BorderSizePixel = 0
 scrollFrame.ScrollBarThickness = 6
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1850)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 3200)
 scrollFrame.Parent = mainFrame
 
 -- Title
@@ -200,13 +200,13 @@ shapeLabel.Position = UDim2.new(0.05, 0, 0, 390)
 shapeLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 shapeLabel.BorderSizePixel = 1
 shapeLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
-shapeLabel.Text = "Orbit Shape: Circle"
+shapeLabel.Text = "🌟 50 ORBIT SHAPES! 🌟 Current: Circle"
 shapeLabel.TextColor3 = Color3.fromRGB(100, 255, 255)
 shapeLabel.TextSize = 13
 shapeLabel.Font = Enum.Font.SourceSansBold
 shapeLabel.Parent = scrollFrame
 
--- Shape Buttons
+-- Shape Buttons (50 shapes!)
 local shapeCircle = createSmallButton("ShapeCircle", "Circle", UDim2.new(0.05, 0, 0, 420))
 shapeCircle.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
 local shapeSphere = createSmallButton("ShapeSphere", "Sphere", UDim2.new(0.36, 0, 0, 420))
@@ -229,42 +229,92 @@ local shapeGalaxy = createSmallButton("ShapeGalaxy", "Galaxy", UDim2.new(0.67, 0
 local shapeRings = createSmallButton("ShapeRings", "Rings", UDim2.new(0.05, 0, 0, 618))
 local shapeMobius = createSmallButton("ShapeMobius", "Mobius", UDim2.new(0.36, 0, 0, 618))
 
+-- NEW 30 SHAPES! 🎉
+local shapeButterfly = createSmallButton("ShapeButterfly", "Butterfly", UDim2.new(0.67, 0, 0, 618))
+local shapeLotus = createSmallButton("ShapeLotus", "Lotus", UDim2.new(0.05, 0, 0, 651))
+local shapeVortex = createSmallButton("ShapeVortex", "Vortex", UDim2.new(0.36, 0, 0, 651))
+local shapeDragon = createSmallButton("ShapeDragon", "Dragon", UDim2.new(0.67, 0, 0, 651))
+local shapeKnot = createSmallButton("ShapeKnot", "Knot", UDim2.new(0.05, 0, 0, 684))
+local shapeSpring = createSmallButton("ShapeSpring", "Spring", UDim2.new(0.36, 0, 0, 684))
+local shapeTrefoil = createSmallButton("ShapeTrefoil", "Trefoil", UDim2.new(0.67, 0, 0, 684))
+local shapeCyclone = createSmallButton("ShapeCyclone", "Cyclone", UDim2.new(0.05, 0, 0, 717))
+local shapeAsteroid = createSmallButton("ShapeAsteroid", "Asteroid", UDim2.new(0.36, 0, 0, 717))
+local shapeSaturn = createSmallButton("ShapeSaturn", "Saturn", UDim2.new(0.67, 0, 0, 717))
+local shapeNebula = createSmallButton("ShapeNebula", "Nebula", UDim2.new(0.05, 0, 0, 750))
+local shapePulsar = createSmallButton("ShapePulsar", "Pulsar", UDim2.new(0.36, 0, 0, 750))
+local shapeSupernova = createSmallButton("ShapeSupernova", "Supernova", UDim2.new(0.67, 0, 0, 750))
+local shapeTorus2 = createSmallButton("ShapeTorus2", "Torus2", UDim2.new(0.05, 0, 0, 783))
+local shapeHypercube = createSmallButton("ShapeHypercube", "Hypercube", UDim2.new(0.36, 0, 0, 783))
+shapeHypercube.TextSize = 10
+local shapeFractal = createSmallButton("ShapeFractal", "Fractal", UDim2.new(0.67, 0, 0, 783))
+local shapeMandala = createSmallButton("ShapeMandala", "Mandala", UDim2.new(0.05, 0, 0, 816))
+local shapeCrystal = createSmallButton("ShapeCrystal", "Crystal", UDim2.new(0.36, 0, 0, 816))
+local shapePhoenix = createSmallButton("ShapePhoenix", "Phoenix", UDim2.new(0.67, 0, 0, 816))
+local shapeCrown = createSmallButton("ShapeCrown", "Crown", UDim2.new(0.05, 0, 0, 849))
+local shapeAngel = createSmallButton("ShapeAngel", "Angel", UDim2.new(0.36, 0, 0, 849))
+local shapeSerpent = createSmallButton("ShapeSerpent", "Serpent", UDim2.new(0.67, 0, 0, 849))
+local shapePortal = createSmallButton("ShapePortal", "Portal", UDim2.new(0.05, 0, 0, 882))
+local shapeWormhole = createSmallButton("ShapeWormhole", "Wormhole", UDim2.new(0.36, 0, 0, 882))
+local shapeBlackhole = createSmallButton("ShapeBlackhole", "Blackhole", UDim2.new(0.67, 0, 0, 882))
+local shapeTesseract = createSmallButton("ShapeTesseract", "Tesseract", UDim2.new(0.05, 0, 0, 915))
+local shapeMatrix = createSmallButton("ShapeMatrix", "Matrix", UDim2.new(0.36, 0, 0, 915))
+local shapeChaos = createSmallButton("ShapeChaos", "Chaos", UDim2.new(0.67, 0, 0, 915))
+local shapeQuantum = createSmallButton("ShapeQuantum", "Quantum", UDim2.new(0.05, 0, 0, 948))
+local shapeAtom = createSmallButton("ShapeAtom", "Atom", UDim2.new(0.36, 0, 0, 948))
+local shapeMolecule = createSmallButton("ShapeMolecule", "Molecule", UDim2.new(0.67, 0, 0, 948))
+
 -- Animation Mode Section
 local animLabel = Instance.new("TextLabel")
 animLabel.Name = "AnimLabel"
 animLabel.Size = UDim2.new(0.9, 0, 0, 25)
-animLabel.Position = UDim2.new(0.05, 0, 0, 662)
+animLabel.Position = UDim2.new(0.05, 0, 0, 992)
 animLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 animLabel.BorderSizePixel = 1
 animLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
-animLabel.Text = "Animation: None"
+animLabel.Text = "✨ 26 ANIMATIONS! ✨ Current: None"
 animLabel.TextColor3 = Color3.fromRGB(255, 150, 255)
 animLabel.TextSize = 13
 animLabel.Font = Enum.Font.SourceSansBold
 animLabel.Parent = scrollFrame
 
--- Animation Buttons
-local animNone = createSmallButton("AnimNone", "None", UDim2.new(0.05, 0, 0, 692))
+-- Animation Buttons (26 total!)
+local animNone = createSmallButton("AnimNone", "None", UDim2.new(0.05, 0, 0, 1022))
 animNone.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local animPulse = createSmallButton("AnimPulse", "Pulse", UDim2.new(0.36, 0, 0, 692))
-local animExpand = createSmallButton("AnimExpand", "Expand", UDim2.new(0.67, 0, 0, 692))
-local animWobble = createSmallButton("AnimWobble", "Wobble", UDim2.new(0.05, 0, 0, 725))
-local animSpin = createSmallButton("AnimSpin", "Spin", UDim2.new(0.36, 0, 0, 725))
-local animShake = createSmallButton("AnimShake", "Shake", UDim2.new(0.67, 0, 0, 725))
-local animBounce = createSmallButton("AnimBounce", "Bounce", UDim2.new(0.05, 0, 0, 758))
-local animTwist = createSmallButton("AnimTwist", "Twist", UDim2.new(0.36, 0, 0, 758))
-local animOrbit = createSmallButton("AnimOrbit", "Orbit", UDim2.new(0.67, 0, 0, 758))
-local animFlip = createSmallButton("AnimFlip", "Flip", UDim2.new(0.05, 0, 0, 791))
-local animStretch = createSmallButton("AnimStretch", "Stretch", UDim2.new(0.36, 0, 0, 791))
-local animSwirl = createSmallButton("AnimSwirl", "Swirl", UDim2.new(0.67, 0, 0, 791))
-local animJitter = createSmallButton("AnimJitter", "Jitter", UDim2.new(0.05, 0, 0, 824))
-local animWaveAnim = createSmallButton("AnimWaveAnim", "Wave", UDim2.new(0.36, 0, 0, 824))
+local animPulse = createSmallButton("AnimPulse", "Pulse", UDim2.new(0.36, 0, 0, 1022))
+local animExpand = createSmallButton("AnimExpand", "Expand", UDim2.new(0.67, 0, 0, 1022))
+local animWobble = createSmallButton("AnimWobble", "Wobble", UDim2.new(0.05, 0, 0, 1055))
+local animSpin = createSmallButton("AnimSpin", "Spin", UDim2.new(0.36, 0, 0, 1055))
+local animShake = createSmallButton("AnimShake", "Shake", UDim2.new(0.67, 0, 0, 1055))
+local animBounce = createSmallButton("AnimBounce", "Bounce", UDim2.new(0.05, 0, 0, 1088))
+local animTwist = createSmallButton("AnimTwist", "Twist", UDim2.new(0.36, 0, 0, 1088))
+local animOrbit = createSmallButton("AnimOrbit", "Orbit", UDim2.new(0.67, 0, 0, 1088))
+local animFlip = createSmallButton("AnimFlip", "Flip", UDim2.new(0.05, 0, 0, 1121))
+local animStretch = createSmallButton("AnimStretch", "Stretch", UDim2.new(0.36, 0, 0, 1121))
+local animSwirl = createSmallButton("AnimSwirl", "Swirl", UDim2.new(0.67, 0, 0, 1121))
+local animJitter = createSmallButton("AnimJitter", "Jitter", UDim2.new(0.05, 0, 0, 1154))
+local animWaveAnim = createSmallButton("AnimWaveAnim", "Wave", UDim2.new(0.36, 0, 0, 1154))
+
+-- NEW 12 ANIMATIONS! 🎉
+local animExplode = createSmallButton("AnimExplode", "Explode", UDim2.new(0.67, 0, 0, 1154))
+local animImplode = createSmallButton("AnimImplode", "Implode", UDim2.new(0.05, 0, 0, 1187))
+local animTeleport = createSmallButton("AnimTeleport", "Teleport", UDim2.new(0.36, 0, 0, 1187))
+local animPhase = createSmallButton("AnimPhase", "Phase", UDim2.new(0.67, 0, 0, 1187))
+local animGlitch = createSmallButton("AnimGlitch", "Glitch", UDim2.new(0.05, 0, 0, 1220))
+local animRipple = createSmallButton("AnimRipple", "Ripple", UDim2.new(0.36, 0, 0, 1220))
+local animBreathing = createSmallButton("AnimBreathing", "Breathing", UDim2.new(0.67, 0, 0, 1220))
+animBreathing.TextSize = 10
+local animCrazy = createSmallButton("AnimCrazy", "Crazy", UDim2.new(0.05, 0, 0, 1253))
+local animZigzag = createSmallButton("AnimZigzag", "Zigzag", UDim2.new(0.36, 0, 0, 1253))
+local animWarp = createSmallButton("AnimWarp", "Warp", UDim2.new(0.67, 0, 0, 1253))
+local animRainbow = createSmallButton("AnimRainbow", "Rainbow", UDim2.new(0.05, 0, 0, 1286))
+local animEarthquake = createSmallButton("AnimEarthquake", "Earthquake", UDim2.new(0.36, 0, 0, 1286))
+animEarthquake.TextSize = 9
 
 -- Wireframe Section
 local wireframeLabel = Instance.new("TextLabel")
 wireframeLabel.Name = "WireframeLabel"
 wireframeLabel.Size = UDim2.new(0.9, 0, 0, 25)
-wireframeLabel.Position = UDim2.new(0.05, 0, 0, 868)
+wireframeLabel.Position = UDim2.new(0.05, 0, 0, 1330)
 wireframeLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 wireframeLabel.BorderSizePixel = 1
 wireframeLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -278,7 +328,7 @@ wireframeLabel.Parent = scrollFrame
 local wireframeToggle = Instance.new("TextButton")
 wireframeToggle.Name = "WireframeToggle"
 wireframeToggle.Size = UDim2.new(0.9, 0, 0, 35)
-wireframeToggle.Position = UDim2.new(0.05, 0, 0, 898)
+wireframeToggle.Position = UDim2.new(0.05, 0, 0, 1360)
 wireframeToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 wireframeToggle.BorderSizePixel = 1
 wireframeToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -289,27 +339,27 @@ wireframeToggle.Font = Enum.Font.SourceSansBold
 wireframeToggle.Parent = scrollFrame
 
 -- Wireframe Shape Buttons
-local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.05, 0, 0, 943))
+local wireframeCube = createSmallButton("WireframeCube", "Cube", UDim2.new(0.05, 0, 0, 1405))
 wireframeCube.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
-local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.36, 0, 0, 943))
-local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.67, 0, 0, 943))
+local wireframePyramid = createSmallButton("WireframePyramid", "Pyramid", UDim2.new(0.36, 0, 0, 1405))
+local wireframeOcta = createSmallButton("WireframeOcta", "Octahedron", UDim2.new(0.67, 0, 0, 1405))
 wireframeOcta.TextSize = 10
-local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.05, 0, 0, 976))
+local wireframeTetra = createSmallButton("WireframeTetra", "Tetrahedron", UDim2.new(0.05, 0, 0, 1438))
 wireframeTetra.TextSize = 10
-local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.36, 0, 0, 976))
+local wireframeIco = createSmallButton("WireframeIco", "Icosahedron", UDim2.new(0.36, 0, 0, 1438))
 wireframeIco.TextSize = 10
-local wireframeTorus = createSmallButton("WireframeTorus", "Torus", UDim2.new(0.67, 0, 0, 976))
-local wireframeCylinder = createSmallButton("WireframeCylinder", "Cylinder", UDim2.new(0.05, 0, 0, 1009))
+local wireframeTorus = createSmallButton("WireframeTorus", "Torus", UDim2.new(0.67, 0, 0, 1438))
+local wireframeCylinder = createSmallButton("WireframeCylinder", "Cylinder", UDim2.new(0.05, 0, 0, 1471))
 wireframeCylinder.TextSize = 11
-local wireframeDodeca = createSmallButton("WireframeDodeca", "Dodecahedron", UDim2.new(0.36, 0, 0, 1009))
+local wireframeDodeca = createSmallButton("WireframeDodeca", "Dodecahedron", UDim2.new(0.36, 0, 0, 1471))
 wireframeDodeca.TextSize = 9
-local wireframeSphere = createSmallButton("WireframeSphere", "Sphere", UDim2.new(0.67, 0, 0, 1009))
+local wireframeSphere = createSmallButton("WireframeSphere", "Sphere", UDim2.new(0.67, 0, 0, 1471))
 
 -- Hammer Mode Section
 local hammerLabel = Instance.new("TextLabel")
 hammerLabel.Name = "HammerLabel"
 hammerLabel.Size = UDim2.new(0.9, 0, 0, 25)
-hammerLabel.Position = UDim2.new(0.05, 0, 0, 1053)
+hammerLabel.Position = UDim2.new(0.05, 0, 0, 1515)
 hammerLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 hammerLabel.BorderSizePixel = 1
 hammerLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -323,7 +373,7 @@ hammerLabel.Parent = scrollFrame
 local hammerToggle = Instance.new("TextButton")
 hammerToggle.Name = "HammerToggle"
 hammerToggle.Size = UDim2.new(0.9, 0, 0, 40)
-hammerToggle.Position = UDim2.new(0.05, 0, 0, 1083)
+hammerToggle.Position = UDim2.new(0.05, 0, 0, 1545)
 hammerToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 hammerToggle.BorderSizePixel = 1
 hammerToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -337,7 +387,7 @@ hammerToggle.Parent = scrollFrame
 local hammerSmash = Instance.new("TextButton")
 hammerSmash.Name = "HammerSmash"
 hammerSmash.Size = UDim2.new(0.9, 0, 0, 40)
-hammerSmash.Position = UDim2.new(0.05, 0, 0, 1133)
+hammerSmash.Position = UDim2.new(0.05, 0, 0, 1595)
 hammerSmash.BackgroundColor3 = Color3.fromRGB(100, 40, 40)
 hammerSmash.BorderSizePixel = 1
 hammerSmash.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -351,7 +401,7 @@ hammerSmash.Parent = scrollFrame
 local orbitButton = Instance.new("TextButton")
 orbitButton.Name = "OrbitButton"
 orbitButton.Size = UDim2.new(0.9, 0, 0, 45)
-orbitButton.Position = UDim2.new(0.05, 0, 0, 1188)
+orbitButton.Position = UDim2.new(0.05, 0, 0, 1650)
 orbitButton.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
 orbitButton.BorderSizePixel = 1
 orbitButton.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -364,14 +414,14 @@ orbitButton.Parent = scrollFrame
 -- Info Label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Name = "InfoLabel"
-infoLabel.Size = UDim2.new(0.9, 0, 0, 310)
-infoLabel.Position = UDim2.new(0.05, 0, 0, 1248)
+infoLabel.Size = UDim2.new(0.9, 0, 0, 480)
+infoLabel.Position = UDim2.new(0.05, 0, 0, 1710)
 infoLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 infoLabel.BorderSizePixel = 1
 infoLabel.BorderColor3 = Color3.fromRGB(80, 80, 100)
-infoLabel.Text = "🔷 20 ORBIT SHAPES: Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star, Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity, Flower, DNA, Tornado, Galaxy, Rings, Mobius\n\n✨ Perfect Polygon Formation: Parts auto-arrange into perfect geometric shapes!\n\n🎭 14 ANIMATIONS: Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist, Orbit, Flip, Stretch, Swirl, Jitter, Wave\n\n🔲 9 WIREFRAME 3D SHAPES: Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron, Torus, Cylinder, Dodecahedron, Sphere\n\n🔨 3D Hammer Mode:\n• Hammer follows block rotation (X/Z axis)\n• 16x16x3 studs with depth\n• Positioned 4 studs beside block\n• SMASHES ground on impact!\n• Unused parts EXPLODE at impact zone!"
+infoLabel.Text = "🌟 50 EPIC ORBIT SHAPES! 🌟\nCircle • Sphere • Cube • Spiral • Wave • Helix • Figure8 • Star • Pentagon • Hexagon • Octagon • Diamond • Heart • Infinity • Flower • DNA • Tornado • Galaxy • Rings • Mobius • Butterfly • Lotus • Vortex • Dragon • Knot • Spring • Trefoil • Cyclone • Asteroid • Saturn • Nebula • Pulsar • Supernova • Torus2 • Hypercube • Fractal • Mandala • Crystal • Phoenix • Crown • Angel • Serpent • Portal • Wormhole • Blackhole • Tesseract • Matrix • Chaos • Quantum • Atom • Molecule\n\n✨ Perfect Polygon Formation: Parts auto-arrange into perfect geometric shapes!\n\n🎭 26 INSANE ANIMATIONS! 🎭\nNone • Pulse • Expand • Wobble • Spin • Shake • Bounce • Twist • Orbit • Flip • Stretch • Swirl • Jitter • Wave • Explode • Implode • Teleport • Phase • Glitch • Ripple • Breathing • Crazy • Zigzag • Warp • Rainbow • Earthquake\n\n🔲 9 WIREFRAME 3D SHAPES:\nCube • Pyramid • Octahedron • Tetrahedron • Icosahedron • Torus • Cylinder • Dodecahedron • Sphere\n\n🔨 3D Hammer Mode:\n• Hammer follows block rotation (X/Z axis)\n• 16x16x3 studs with depth\n• Positioned 4 studs beside block\n• SMASHES ground on impact!\n• Unused parts EXPLODE at impact zone!\n\n💥 YOUR FRIENDS WILL BE AMAZED! 💥"
 infoLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
-infoLabel.TextSize = 10
+infoLabel.TextSize = 9
 infoLabel.Font = Enum.Font.SourceSans
 infoLabel.TextWrapped = true
 infoLabel.TextYAlignment = Enum.TextYAlignment.Top
@@ -1316,14 +1366,307 @@ local function startOrbiting()
 			y = height + localZ * math.sin(tilt) + math.sin(time * 2) * 1
 			z = localZ * math.cos(tilt)
 			
-		elseif orbitShape == "Mobius" then
-			-- Mobius strip
-			local u = angle
-			local v = ((index / total) - 0.5) * 0.4
-			local mobiusRadius = radius * 0.8
-			x = (mobiusRadius + v * math.cos(u / 2)) * math.cos(u)
-			y = v * math.sin(u / 2) + height + math.sin(time * 2) * 1
-			z = (mobiusRadius + v * math.cos(u / 2)) * math.sin(u)
+		elseif orbitShape == "Molecule" then
+			-- Molecule structure (tetrahedron with center)
+			local molecules = 5
+			local molIndex = (index - 1) % molecules
+			if molIndex == 0 then
+				x, y, z = 0, 0, 0 -- Center atom
+			else
+				local tetraAngle = ((molIndex - 1) / 4) * math.pi * 2
+				x = math.cos(tetraAngle) * radius * 0.8
+				y = math.sin(tetraAngle * 2) * radius * 0.8
+				z = math.sin(tetraAngle) * radius * 0.8
+			end
+			y = y + height + math.sin(time * 2) * 2
+			
+		-- NEW 30 SHAPES START HERE! 🎉
+		elseif orbitShape == "Butterfly" then
+			-- Butterfly wing pattern
+			local t = angle
+			local wingSpan = radius * 1.2
+			x = math.sin(t) * wingSpan * (math.exp(math.cos(t)) - 2 * math.cos(4*t) - math.sin(t/12)^5)
+			z = math.cos(t) * wingSpan * (math.exp(math.cos(t)) - 2 * math.cos(4*t) - math.sin(t/12)^5)
+			y = height + math.sin(time * 2 + angle) * 3
+			
+		elseif orbitShape == "Lotus" then
+			-- Lotus flower opening pattern
+			local petals = 8
+			local petalRadius = radius * (0.5 + 0.5 * math.cos(petals * angle))
+			x = math.cos(angle) * petalRadius
+			z = math.sin(angle) * petalRadius
+			y = height + math.abs(math.sin(angle * petals)) * 4 + math.sin(time) * 2
+			
+		elseif orbitShape == "Vortex" then
+			-- Swirling vortex descending
+			local heightFactor = (index / total)
+			local radiusFactor = 1 - (heightFactor * 0.7)
+			local swirlAngle = angle + heightFactor * math.pi * 6
+			x = math.cos(swirlAngle) * radius * radiusFactor
+			z = math.sin(swirlAngle) * radius * radiusFactor
+			y = height + (heightFactor - 0.5) * 15 + math.sin(time * 2) * 2
+			
+		elseif orbitShape == "Dragon" then
+			-- Chinese dragon serpentine body
+			local segments = 20
+			local segmentIndex = (index / total) * segments
+			local baseAngle = segmentIndex * 0.5
+			local amplitude = radius * 0.7
+			x = math.sin(baseAngle + time * 0.5) * amplitude
+			z = segmentIndex * 2 - segments
+			y = height + math.cos(baseAngle * 2 + time) * 5
+			
+		elseif orbitShape == "Knot" then
+			-- Trefoil knot variation
+			local t = angle * 3
+			x = math.sin(t) + 2 * math.sin(2 * t)
+			y = math.cos(t) - 2 * math.cos(2 * t) + height
+			z = -math.sin(3 * t)
+			x, y, z = x * radius * 0.3, y * 0.3 * radius, z * radius * 0.3
+			
+		elseif orbitShape == "Spring" then
+			-- Coiled spring
+			local coils = 5
+			local coilAngle = angle * coils
+			x = math.cos(angle) * radius * 0.6
+			z = math.sin(angle) * radius * 0.6
+			y = height + (angle / (math.pi * 2)) * 12 - 6 + math.cos(coilAngle) * 2
+			
+		elseif orbitShape == "Trefoil" then
+			-- Perfect trefoil knot
+			local t = angle
+			x = math.sin(t) + 2 * math.sin(2*t)
+			y = math.cos(t) - 2 * math.cos(2*t)
+			z = -math.sin(3*t)
+			x, y, z = x * radius * 0.25, y * radius * 0.25 + height, z * radius * 0.25
+			
+		elseif orbitShape == "Cyclone" then
+			-- Intense cyclone spiral
+			local spiralTight = 0.3
+			local heightPos = (angle / (math.pi * 2)) * 15 - 7.5
+			local radiusAtHeight = radius * (1 - math.abs(heightPos / 10) * spiralTight)
+			x = math.cos(angle * 3 + time) * radiusAtHeight
+			z = math.sin(angle * 3 + time) * radiusAtHeight
+			y = heightPos + height
+			
+		elseif orbitShape == "Asteroid" then
+			-- Asteroid belt with random perturbations
+			local beltRadius = radius + math.sin(angle * 7 + index) * 2
+			x = math.cos(angle) * beltRadius
+			z = math.sin(angle) * beltRadius
+			y = height + math.sin(angle * 11 + index) * 3 + math.cos(time * 2) * 1
+			
+		elseif orbitShape == "Saturn" then
+			-- Saturn with rings at different angles
+			local ringLevel = math.floor((index - 1) % 3)
+			local tiltAngle = ringLevel * math.pi / 12
+			local ringRadius = radius * (0.8 + ringLevel * 0.15)
+			local localX = math.cos(angle) * ringRadius
+			local localZ = math.sin(angle) * ringRadius
+			x = localX
+			y = height + localZ * math.sin(tiltAngle) + math.sin(time * 2) * 0.5
+			z = localZ * math.cos(tiltAngle)
+			
+		elseif orbitShape == "Nebula" then
+			-- Chaotic nebula cloud
+			local cloudRadius = radius * (0.5 + math.random() * 0.5)
+			local cloudAngle = angle + math.sin(time + index) * 0.3
+			x = math.cos(cloudAngle) * cloudRadius
+			z = math.sin(cloudAngle) * cloudRadius
+			y = height + math.sin(index + time * 1.5) * 4
+			
+		elseif orbitShape == "Pulsar" then
+			-- Pulsing beams from center
+			local beamCount = 6
+			local beamIndex = math.floor((index - 1) % beamCount)
+			local beamAngle = (beamIndex / beamCount) * math.pi * 2
+			local beamDistance = (((index - 1) / beamCount) / (total / beamCount)) * radius
+			local pulse = 1 + math.sin(time * 5) * 0.3
+			x = math.cos(beamAngle) * beamDistance * pulse
+			z = math.sin(beamAngle) * beamDistance * pulse
+			y = height + math.sin(time * 3 + beamIndex) * 2
+			
+		elseif orbitShape == "Supernova" then
+			-- Explosive supernova expanding outward
+			local explosionProgress = (math.sin(time * 0.8) + 1) / 2
+			local explosionRadius = radius * (0.3 + explosionProgress * 1.5)
+			local randomAngle = angle + math.sin(index * 7) * 0.5
+			x = math.cos(randomAngle) * explosionRadius
+			z = math.sin(randomAngle) * explosionRadius
+			y = height + math.sin(randomAngle * 3 + time * 2) * explosionRadius * 0.3
+			
+		elseif orbitShape == "Torus2" then
+			-- Double interlinked torus
+			local majorRadius = radius * 0.7
+			local minorRadius = radius * 0.25
+			local torusSet = (index % 2 == 0) and 0 or math.pi
+			local u = angle + torusSet
+			local v = angle * 3
+			x = (majorRadius + minorRadius * math.cos(v)) * math.cos(u)
+			y = minorRadius * math.sin(v) + height + math.sin(time * 2) * 1
+			z = (majorRadius + minorRadius * math.cos(v)) * math.sin(u)
+			
+		elseif orbitShape == "Hypercube" then
+			-- 4D hypercube projection
+			local w = time * 0.5
+			local cubeSize = radius * 0.6
+			local cornerIndex = math.floor((index - 1) % 16)
+			local coords = {
+				{-1,-1,-1,-1},{1,-1,-1,-1},{-1,1,-1,-1},{1,1,-1,-1},
+				{-1,-1,1,-1},{1,-1,1,-1},{-1,1,1,-1},{1,1,1,-1},
+				{-1,-1,-1,1},{1,-1,-1,1},{-1,1,-1,1},{1,1,-1,1},
+				{-1,-1,1,1},{1,-1,1,1},{-1,1,1,1},{1,1,1,1}
+			}
+			local coord = coords[cornerIndex + 1]
+			local w4d = coord[4] * math.cos(w)
+			x = coord[1] * cubeSize / (2 + w4d)
+			y = coord[2] * cubeSize / (2 + w4d) + height
+			z = coord[3] * cubeSize / (2 + w4d)
+			
+		elseif orbitShape == "Fractal" then
+			-- Sierpinski-inspired fractal pattern
+			local level = math.floor(math.log(index) / math.log(3)) % 4
+			local fractalAngle = angle * (3 ^ level)
+			local fractalRadius = radius / (level + 1)
+			x = math.cos(fractalAngle) * fractalRadius
+			z = math.sin(fractalAngle) * fractalRadius
+			y = height + level * 3 + math.sin(time * 2) * 1
+			
+		elseif orbitShape == "Mandala" then
+			-- Intricate mandala pattern
+			local layers = 4
+			local layerIndex = math.floor((index - 1) % layers)
+			local layerRadius = radius * (0.3 + layerIndex * 0.2)
+			local petals = 8 + layerIndex * 4
+			local petalAngle = angle * petals
+			local petalRadius = layerRadius * (1 + math.sin(petalAngle) * 0.3)
+			x = math.cos(angle) * petalRadius
+			z = math.sin(angle) * petalRadius
+			y = height + layerIndex * 2 + math.sin(time * 2) * 1
+			
+		elseif orbitShape == "Crystal" then
+			-- Crystalline structure
+			local faces = 6
+			local faceIndex = math.floor((index - 1) % faces)
+			local faceAngle = (faceIndex / faces) * math.pi * 2
+			local crystalHeight = ((index - 1) / faces) / (total / faces) * radius
+			x = math.cos(faceAngle) * (radius - crystalHeight * 0.5)
+			z = math.sin(faceAngle) * (radius - crystalHeight * 0.5)
+			y = height + crystalHeight - radius * 0.5 + math.sin(time * 2) * 1
+			
+		elseif orbitShape == "Phoenix" then
+			-- Phoenix with wings spread
+			local t = angle
+			local wingCurve = math.sin(t * 2) * radius * 0.8
+			x = (t - math.pi) * radius * 0.5
+			z = wingCurve * math.cos(time * 2)
+			y = height + math.abs(wingCurve) * 0.5 + 5
+			
+		elseif orbitShape == "Crown" then
+			-- Royal crown with peaks
+			local peaks = 8
+			local peakIndex = math.floor(angle / (math.pi * 2) * peaks)
+			local baseRadius = radius * 0.9
+			local peakHeight = ((peakIndex % 2) == 0) and 6 or 3
+			x = math.cos(angle) * baseRadius
+			z = math.sin(angle) * baseRadius
+			y = height + peakHeight + math.sin(time * 2) * 1
+			
+		elseif orbitShape == "Angel" then
+			-- Angel with wings
+			local wingAngle = math.sin(angle * 2) * radius
+			x = math.cos(angle) * radius * 0.4
+			z = wingAngle
+			y = height + math.abs(math.sin(angle)) * 6 + math.sin(time * 1.5) * 2
+			
+		elseif orbitShape == "Serpent" then
+			-- Slithering serpent
+			local bodyLength = total
+			local segment = (index / bodyLength)
+			local serpentAngle = segment * math.pi * 4 + time * 2
+			x = math.sin(serpentAngle) * radius * 0.6
+			z = segment * radius * 2 - radius
+			y = height + math.cos(serpentAngle * 2) * 3
+			
+		elseif orbitShape == "Portal" then
+			-- Swirling portal
+			local portalAngle = angle * 3 + time * 2
+			local portalRadius = radius * (0.5 + (index / total) * 0.5)
+			x = math.cos(portalAngle) * portalRadius
+			z = math.sin(portalAngle) * portalRadius
+			y = height + math.sin(angle * 5 + time * 3) * 2
+			
+		elseif orbitShape == "Wormhole" then
+			-- Twisted wormhole tunnel
+			local tunnelProgress = (index / total)
+			local tunnelRadius = radius * (0.3 + math.sin(tunnelProgress * math.pi) * 0.7)
+			local twist = tunnelProgress * math.pi * 4 + time
+			x = math.cos(angle + twist) * tunnelRadius
+			z = math.sin(angle + twist) * tunnelRadius
+			y = height + (tunnelProgress - 0.5) * 20
+			
+		elseif orbitShape == "Blackhole" then
+			-- Matter spiraling into blackhole
+			local spiralProgress = (index / total)
+			local spiralRadius = radius * (1 - spiralProgress * 0.9)
+			local spiralAngle = angle + spiralProgress * math.pi * 8 - time * 3
+			x = math.cos(spiralAngle) * spiralRadius
+			z = math.sin(spiralAngle) * spiralRadius
+			y = height - spiralProgress * 10 + math.sin(time * 4) * 1
+			
+		elseif orbitShape == "Tesseract" then
+			-- 4D tesseract rotation
+			local t4d = time * 0.3
+			local size = radius * 0.5
+			local vertex = math.floor((index - 1) % 16)
+			local coords = {{-1,-1,-1,-1},{1,-1,-1,-1},{-1,1,-1,-1},{1,1,-1,-1},{-1,-1,1,-1},{1,-1,1,-1},{-1,1,1,-1},{1,1,1,-1},{-1,-1,-1,1},{1,-1,-1,1},{-1,1,-1,1},{1,1,-1,1},{-1,-1,1,1},{1,-1,1,1},{-1,1,1,1},{1,1,1,1}}
+			local c = coords[vertex + 1]
+			local w = c[4]
+			local scale = 2 / (3 - w * math.cos(t4d))
+			x = c[1] * size * scale
+			y = c[2] * size * scale + height
+			z = c[3] * size * scale
+			
+		elseif orbitShape == "Matrix" then
+			-- Matrix digital rain pattern
+			local columns = 8
+			local columnIndex = math.floor((index - 1) % columns)
+			local columnAngle = (columnIndex / columns) * math.pi * 2
+			local fallSpeed = ((index - 1) / columns) % 10
+			local columnRadius = radius * 0.8
+			x = math.cos(columnAngle) * columnRadius
+			z = math.sin(columnAngle) * columnRadius
+			y = height + 10 - ((time * 5 + fallSpeed) % 20)
+			
+		elseif orbitShape == "Chaos" then
+			-- Chaotic strange attractor
+			local chaosX = math.sin(angle * 7 + time) * radius
+			local chaosY = math.cos(angle * 5 - time * 0.7) * radius
+			local chaosZ = math.sin(angle * 11 + time * 1.3) * radius
+			x = chaosX
+			y = chaosY * 0.5 + height
+			z = chaosZ
+			
+		elseif orbitShape == "Quantum" then
+			-- Quantum probability cloud
+			local probabilityRadius = radius * (0.2 + math.random() * 0.8)
+			local quantumAngle = angle + math.sin(time * 3 + index) * math.pi
+			x = math.cos(quantumAngle) * probabilityRadius
+			z = math.sin(quantumAngle) * probabilityRadius
+			y = height + (math.random() - 0.5) * 8
+			
+		elseif orbitShape == "Atom" then
+			-- Atom with electron orbitals
+			local orbitals = 3
+			local orbitalIndex = math.floor((index - 1) % orbitals)
+			local orbitalAngle = angle + (orbitalIndex * math.pi * 2 / 3)
+			local orbitalRadius = radius * (0.4 + orbitalIndex * 0.2)
+			local tilt = orbitalIndex * math.pi / 6
+			local localX = math.cos(angle * (orbitalIndex + 1) + time * 2) * orbitalRadius
+			local localZ = math.sin(angle * (orbitalIndex + 1) + time * 2) * orbitalRadius
+			x = localX * math.cos(tilt)
+			y = height + localZ * math.sin(tilt)
+			z = localZ * math.cos(tilt) - localX * math.sin(tilt)
 		end
 		
 		return centerPos + Vector3.new(x, y, z)
@@ -1478,6 +1821,127 @@ local function startOrbiting()
 						-- Wave motion through all parts
 						local waveOffset = math.sin(time * 3 - (index / total) * math.pi * 2) * 5
 						targetPos = targetPos + Vector3.new(0, waveOffset, 0)
+						
+					-- NEW 12 ANIMATIONS! 🎉
+					elseif animationMode == "Explode" then
+						-- Parts explode outward from center
+						local explodePulse = math.abs(math.sin(time * 1.5))
+						local direction = (targetPos - centerPos).Unit
+						local explodeDistance = explodePulse * 15
+						targetPos = centerPos + direction * ((targetPos - centerPos).Magnitude + explodeDistance)
+						
+					elseif animationMode == "Implode" then
+						-- Parts get sucked toward center
+						local implodePulse = math.abs(math.sin(time * 2))
+						local direction = (targetPos - centerPos).Unit
+						local implodeDistance = implodePulse * 8
+						targetPos = centerPos + direction * math.max(2, (targetPos - centerPos).Magnitude - implodeDistance)
+						
+					elseif animationMode == "Teleport" then
+						-- Parts blink in and out of existence
+						local teleportCycle = math.sin(time * 4 + data.phaseOffset)
+						if teleportCycle < -0.3 then
+							-- Teleport to random nearby position
+							local randomOffset = Vector3.new(
+								math.random(-5, 5),
+								math.random(-5, 5),
+								math.random(-5, 5)
+							)
+							targetPos = targetPos + randomOffset
+						end
+						
+					elseif animationMode == "Phase" then
+						-- Parts phase through different dimensions
+						local phaseOffset = math.sin(time * 2 + data.phaseOffset) * 10
+						local phaseAngle = time * 3 + data.index
+						targetPos = targetPos + Vector3.new(
+							math.cos(phaseAngle) * phaseOffset,
+							0,
+							math.sin(phaseAngle) * phaseOffset
+						)
+						
+					elseif animationMode == "Glitch" then
+						-- Random glitchy movements
+						if math.random() > 0.7 then
+							local glitchOffset = Vector3.new(
+								math.random(-3, 3),
+								math.random(-3, 3),
+								math.random(-3, 3)
+							)
+							targetPos = targetPos + glitchOffset
+						end
+						part.AssemblyAngularVelocity = Vector3.new(
+							math.random(-10, 10),
+							math.random(-10, 10),
+							math.random(-10, 10)
+						)
+						
+					elseif animationMode == "Ripple" then
+						-- Ripple waves emanating from center
+						local distanceFromCenter = (targetPos - centerPos).Magnitude
+						local rippleWave = math.sin(distanceFromCenter * 0.5 - time * 5) * 4
+						targetPos = targetPos + Vector3.new(0, rippleWave, 0)
+						
+					elseif animationMode == "Breathing" then
+						-- Gentle breathing motion
+						local breathe = math.sin(time * 0.8) * 0.3 + 1
+						local direction = (targetPos - centerPos).Unit
+						targetPos = centerPos + direction * (targetPos - centerPos).Magnitude * breathe
+						
+					elseif animationMode == "Crazy" then
+						-- Absolutely insane chaotic motion!
+						local crazyX = math.sin(time * 7 + data.index) * 8
+						local crazyY = math.cos(time * 11 + data.index * 2) * 8
+						local crazyZ = math.sin(time * 13 + data.index * 3) * 8
+						targetPos = targetPos + Vector3.new(crazyX, crazyY, crazyZ)
+						part.AssemblyAngularVelocity = Vector3.new(
+							math.sin(time * 5 + data.index) * 20,
+							math.cos(time * 7 + data.index) * 20,
+							math.sin(time * 9 + data.index) * 20
+						)
+						
+					elseif animationMode == "Zigzag" then
+						-- Sharp zigzag patterns
+						local zigzagSpeed = 3
+						local zigzagAmount = 6
+						local zigzagPhase = math.floor(time * zigzagSpeed + data.index * 0.2) % 2
+						local zigzagOffset = (zigzagPhase == 0) and zigzagAmount or -zigzagAmount
+						local perpendicular = Vector3.new(
+							-(targetPos - centerPos).Z,
+							0,
+							(targetPos - centerPos).X
+						).Unit
+						targetPos = targetPos + perpendicular * zigzagOffset
+						
+					elseif animationMode == "Warp" then
+						-- Warp speed effect
+						local warpFactor = (math.sin(time * 2) + 1) / 2
+						local warpDirection = (targetPos - centerPos).Unit
+						local warpStretch = warpFactor * 12
+						targetPos = targetPos + warpDirection * warpStretch
+						part.AssemblyAngularVelocity = warpDirection * 30 * warpFactor
+						
+					elseif animationMode == "Rainbow" then
+						-- Parts move in rainbow wave pattern
+						local rainbowPhase = (data.index / total) * math.pi * 2
+						local rainbowHeight = math.sin(time * 2 + rainbowPhase) * 6
+						targetPos = targetPos + Vector3.new(0, rainbowHeight, 0)
+						local rainbowSpin = math.cos(time * 3 + rainbowPhase) * 5
+						part.AssemblyAngularVelocity = Vector3.new(rainbowSpin, rainbowSpin, rainbowSpin)
+						
+					elseif animationMode == "Earthquake" then
+						-- Violent shaking like an earthquake!
+						local quakeIntensity = 4
+						local quakeSpeed = 15
+						local quakeX = math.sin(time * quakeSpeed + data.index) * quakeIntensity
+						local quakeY = math.sin(time * quakeSpeed * 1.3 + data.index) * quakeIntensity
+						local quakeZ = math.sin(time * quakeSpeed * 0.7 + data.index) * quakeIntensity
+						targetPos = targetPos + Vector3.new(quakeX, quakeY, quakeZ)
+						part.AssemblyAngularVelocity = Vector3.new(
+							math.sin(time * 8) * 15,
+							math.cos(time * 9) * 15,
+							math.sin(time * 7) * 15
+						)
 					end
 				end
 				
@@ -1570,11 +2034,11 @@ gapModePerPart.MouseButton1Click:Connect(function() updateGapModeButtons("GapPer
 gapModeBetween.MouseButton1Click:Connect(function() updateGapModeButtons("GapBetweenParts") end)
 
 -- Orbit Shape Button Events
-local shapeButtons = {shapeCircle, shapeSphere, shapeCube, shapeSpiral, shapeWave, shapeHelix, shapeFigure8, shapeStar, shapePentagon, shapeHexagon, shapeOctagon, shapeDiamond, shapeHeart, shapeInfinity, shapeFlower, shapeDNA, shapeTornado, shapeGalaxy, shapeRings, shapeMobius}
+local shapeButtons = {shapeCircle, shapeSphere, shapeCube, shapeSpiral, shapeWave, shapeHelix, shapeFigure8, shapeStar, shapePentagon, shapeHexagon, shapeOctagon, shapeDiamond, shapeHeart, shapeInfinity, shapeFlower, shapeDNA, shapeTornado, shapeGalaxy, shapeRings, shapeMobius, shapeButterfly, shapeLotus, shapeVortex, shapeDragon, shapeKnot, shapeSpring, shapeTrefoil, shapeCyclone, shapeAsteroid, shapeSaturn, shapeNebula, shapePulsar, shapeSupernova, shapeTorus2, shapeHypercube, shapeFractal, shapeMandala, shapeCrystal, shapePhoenix, shapeCrown, shapeAngel, shapeSerpent, shapePortal, shapeWormhole, shapeBlackhole, shapeTesseract, shapeMatrix, shapeChaos, shapeQuantum, shapeAtom, shapeMolecule}
 
 local function updateOrbitShape(selectedShape, buttonClicked)
 	orbitShape = selectedShape
-	shapeLabel.Text = "Orbit Shape: " .. orbitShape
+	shapeLabel.Text = "🌟 50 SHAPES! 🌟 Current: " .. orbitShape
 	
 	for _, btn in ipairs(shapeButtons) do
 		btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -1603,13 +2067,45 @@ shapeTornado.MouseButton1Click:Connect(function() updateOrbitShape("Tornado", sh
 shapeGalaxy.MouseButton1Click:Connect(function() updateOrbitShape("Galaxy", shapeGalaxy) end)
 shapeRings.MouseButton1Click:Connect(function() updateOrbitShape("Rings", shapeRings) end)
 shapeMobius.MouseButton1Click:Connect(function() updateOrbitShape("Mobius", shapeMobius) end)
+-- NEW 30 SHAPES
+shapeButterfly.MouseButton1Click:Connect(function() updateOrbitShape("Butterfly", shapeButterfly) end)
+shapeLotus.MouseButton1Click:Connect(function() updateOrbitShape("Lotus", shapeLotus) end)
+shapeVortex.MouseButton1Click:Connect(function() updateOrbitShape("Vortex", shapeVortex) end)
+shapeDragon.MouseButton1Click:Connect(function() updateOrbitShape("Dragon", shapeDragon) end)
+shapeKnot.MouseButton1Click:Connect(function() updateOrbitShape("Knot", shapeKnot) end)
+shapeSpring.MouseButton1Click:Connect(function() updateOrbitShape("Spring", shapeSpring) end)
+shapeTrefoil.MouseButton1Click:Connect(function() updateOrbitShape("Trefoil", shapeTrefoil) end)
+shapeCyclone.MouseButton1Click:Connect(function() updateOrbitShape("Cyclone", shapeCyclone) end)
+shapeAsteroid.MouseButton1Click:Connect(function() updateOrbitShape("Asteroid", shapeAsteroid) end)
+shapeSaturn.MouseButton1Click:Connect(function() updateOrbitShape("Saturn", shapeSaturn) end)
+shapeNebula.MouseButton1Click:Connect(function() updateOrbitShape("Nebula", shapeNebula) end)
+shapePulsar.MouseButton1Click:Connect(function() updateOrbitShape("Pulsar", shapePulsar) end)
+shapeSupernova.MouseButton1Click:Connect(function() updateOrbitShape("Supernova", shapeSupernova) end)
+shapeTorus2.MouseButton1Click:Connect(function() updateOrbitShape("Torus2", shapeTorus2) end)
+shapeHypercube.MouseButton1Click:Connect(function() updateOrbitShape("Hypercube", shapeHypercube) end)
+shapeFractal.MouseButton1Click:Connect(function() updateOrbitShape("Fractal", shapeFractal) end)
+shapeMandala.MouseButton1Click:Connect(function() updateOrbitShape("Mandala", shapeMandala) end)
+shapeCrystal.MouseButton1Click:Connect(function() updateOrbitShape("Crystal", shapeCrystal) end)
+shapePhoenix.MouseButton1Click:Connect(function() updateOrbitShape("Phoenix", shapePhoenix) end)
+shapeCrown.MouseButton1Click:Connect(function() updateOrbitShape("Crown", shapeCrown) end)
+shapeAngel.MouseButton1Click:Connect(function() updateOrbitShape("Angel", shapeAngel) end)
+shapeSerpent.MouseButton1Click:Connect(function() updateOrbitShape("Serpent", shapeSerpent) end)
+shapePortal.MouseButton1Click:Connect(function() updateOrbitShape("Portal", shapePortal) end)
+shapeWormhole.MouseButton1Click:Connect(function() updateOrbitShape("Wormhole", shapeWormhole) end)
+shapeBlackhole.MouseButton1Click:Connect(function() updateOrbitShape("Blackhole", shapeBlackhole) end)
+shapeTesseract.MouseButton1Click:Connect(function() updateOrbitShape("Tesseract", shapeTesseract) end)
+shapeMatrix.MouseButton1Click:Connect(function() updateOrbitShape("Matrix", shapeMatrix) end)
+shapeChaos.MouseButton1Click:Connect(function() updateOrbitShape("Chaos", shapeChaos) end)
+shapeQuantum.MouseButton1Click:Connect(function() updateOrbitShape("Quantum", shapeQuantum) end)
+shapeAtom.MouseButton1Click:Connect(function() updateOrbitShape("Atom", shapeAtom) end)
+shapeMolecule.MouseButton1Click:Connect(function() updateOrbitShape("Molecule", shapeMolecule) end)
 
 -- Animation Mode Button Events
-local animButtons = {animNone, animPulse, animExpand, animWobble, animSpin, animShake, animBounce, animTwist, animOrbit, animFlip, animStretch, animSwirl, animJitter, animWaveAnim}
+local animButtons = {animNone, animPulse, animExpand, animWobble, animSpin, animShake, animBounce, animTwist, animOrbit, animFlip, animStretch, animSwirl, animJitter, animWaveAnim, animExplode, animImplode, animTeleport, animPhase, animGlitch, animRipple, animBreathing, animCrazy, animZigzag, animWarp, animRainbow, animEarthquake}
 
 local function updateAnimationMode(selectedAnim, buttonClicked)
 	animationMode = selectedAnim
-	animLabel.Text = "Animation: " .. animationMode
+	animLabel.Text = "✨ 26 ANIMATIONS! ✨ Current: " .. animationMode
 	
 	for _, btn in ipairs(animButtons) do
 		btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -1632,6 +2128,19 @@ animStretch.MouseButton1Click:Connect(function() updateAnimationMode("Stretch", 
 animSwirl.MouseButton1Click:Connect(function() updateAnimationMode("Swirl", animSwirl) end)
 animJitter.MouseButton1Click:Connect(function() updateAnimationMode("Jitter", animJitter) end)
 animWaveAnim.MouseButton1Click:Connect(function() updateAnimationMode("Wave", animWaveAnim) end)
+-- NEW 12 ANIMATIONS
+animExplode.MouseButton1Click:Connect(function() updateAnimationMode("Explode", animExplode) end)
+animImplode.MouseButton1Click:Connect(function() updateAnimationMode("Implode", animImplode) end)
+animTeleport.MouseButton1Click:Connect(function() updateAnimationMode("Teleport", animTeleport) end)
+animPhase.MouseButton1Click:Connect(function() updateAnimationMode("Phase", animPhase) end)
+animGlitch.MouseButton1Click:Connect(function() updateAnimationMode("Glitch", animGlitch) end)
+animRipple.MouseButton1Click:Connect(function() updateAnimationMode("Ripple", animRipple) end)
+animBreathing.MouseButton1Click:Connect(function() updateAnimationMode("Breathing", animBreathing) end)
+animCrazy.MouseButton1Click:Connect(function() updateAnimationMode("Crazy", animCrazy) end)
+animZigzag.MouseButton1Click:Connect(function() updateAnimationMode("Zigzag", animZigzag) end)
+animWarp.MouseButton1Click:Connect(function() updateAnimationMode("Warp", animWarp) end)
+animRainbow.MouseButton1Click:Connect(function() updateAnimationMode("Rainbow", animRainbow) end)
+animEarthquake.MouseButton1Click:Connect(function() updateAnimationMode("Earthquake", animEarthquake) end)
 
 -- Wireframe Toggle Event
 wireframeToggle.MouseButton1Click:Connect(function()
@@ -1720,33 +2229,46 @@ player.CharacterAdded:Connect(function()
 	destroyHammer()
 end)
 
-print("🌟 ULTIMATE Orbit Parts Script with TONS of Features! 🌟")
+print("🌟✨🎉 ULTIMATE MEGA Orbit Parts Script! 🎉✨🌟")
+print("═══════════════════════════════════════════════")
 print("Instructions:")
 print("1. Click 'Enable Selection Mode'")
 print("2. Click on an unlocked part to select it")
 print("3. Adjust orbit distance, speed, and gap settings")
-print("4. Choose from 20 ORBIT SHAPES!")
-print("5. Apply 14 DIFFERENT ANIMATIONS!")
+print("4. Choose from 50 INSANE ORBIT SHAPES!")
+print("5. Apply 26 MIND-BLOWING ANIMATIONS!")
 print("6. Toggle Wireframe Mode for 9 3D shapes")
-print("7. Create 3D Hammer (16x16x3 studs) - positioned 4 studs beside block")
-print("8. Hammer follows block rotation on X and Z axes")
-print("9. Press M or click 'SMASH GROUND' - unused parts EXPLODE at impact!")
+print("7. Create 3D Hammer (16x16x3 studs)")
+print("8. Press M or click 'SMASH GROUND'")
 print("")
-print("✨✨ NEW FEATURES ✨✨")
-print("🔷 20 ORBIT SHAPES:")
-print("   Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star")
-print("   Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity")
-print("   Flower, DNA, Tornado, Galaxy, Rings, Mobius")
+print("🌟🌟🌟 EPIC FEATURES 🌟🌟🌟")
 print("")
-print("🎭 14 ANIMATIONS:")
-print("   Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist")
-print("   Orbit, Flip, Stretch, Swirl, Jitter, Wave")
+print("🔷 50 ORBIT SHAPES:")
+print("   Classic: Circle, Sphere, Cube, Spiral, Wave, Helix")
+print("   Geometric: Pentagon, Hexagon, Octagon, Star, Diamond")
+print("   Artistic: Heart, Infinity, Flower, Butterfly, Lotus")
+print("   Scientific: DNA, Atom, Molecule, Quantum")
+print("   Cosmic: Galaxy, Nebula, Pulsar, Supernova, Blackhole")
+print("   Mystical: Dragon, Phoenix, Angel, Serpent, Crown")
+print("   Dimensional: Portal, Wormhole, Tesseract, Hypercube")
+print("   Mathematical: Trefoil, Knot, Mobius, Fractal, Mandala")
+print("   Chaotic: Tornado, Cyclone, Vortex, Chaos, Matrix")
+print("   Plus MORE: Saturn, Crystal, Torus2, Rings, and more!")
 print("")
-print("🔲 9 WIREFRAME 3D SHAPES:")
-print("   Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron")
-print("   Torus, Cylinder, Dodecahedron, Sphere")
+print("✨ 26 ANIMATIONS:")
+print("   Smooth: Pulse, Expand, Breathing, Wave, Ripple")
+print("   Dynamic: Wobble, Spin, Bounce, Twist, Swirl")
+print("   Intense: Shake, Jitter, Earthquake, Crazy")
+print("   Spatial: Orbit, Flip, Stretch, Zigzag, Warp")
+print("   Reality-Bending: Explode, Implode, Teleport, Phase")
+print("   Visual: Glitch, Rainbow")
 print("")
-print("🔨 3D Hammer with depth - follows block rotation")
-print("💥 Ground Impact - hammer smashes down, parts explode at impact zone!")
-print("👁️ Hide Selection Box toggle - enjoy unobstructed views!")
-print("📐 Perfect Polygon Formation - parts auto-arrange perfectly")
+print("🔨 3D HAMMER MODE:")
+print("   • 16x16x3 studs with true depth")
+print("   • Follows block X/Z rotation")
+print("   • Positioned beside selected block")
+print("   • EPIC ground smash animation")
+print("   • Unused parts EXPLODE at impact!")
+print("")
+print("💥💥 YOUR FRIENDS WILL BE SPEECHLESS! 💥💥")
+print("═══════════════════════════════════════════════")
