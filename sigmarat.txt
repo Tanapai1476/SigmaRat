@@ -25,6 +25,9 @@ local gapValue = 2
 local orbitShape = "Circle" -- "Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star", "Pentagon", "Hexagon", "Octagon", "Diamond", "Heart", "Infinity", "Flower", "DNA", "Tornado", "Galaxy", "Rings", "Mobius"
 local animationMode = "None" -- "None", "Pulse", "Expand", "Wobble", "Spin", "Shake", "Bounce", "Twist", "Orbit", "Flip", "Stretch", "Swirl", "Jitter", "Wave"
 local wireframeMode = false
+local trailMode = false
+local trailParts = {}
+local trailConnection = nil
 local wireframeShape = "Cube" -- "Cube", "Pyramid", "Octahedron", "Tetrahedron", "Icosahedron", "Torus", "Cylinder", "Dodecahedron", "Sphere"
 local hammerMode = false
 local hammerStatue = nil
@@ -347,11 +350,39 @@ hammerSmash.TextSize = 14
 hammerSmash.Font = Enum.Font.SourceSansBold
 hammerSmash.Parent = scrollFrame
 
--- Orbit Button
+-- Trail Mode Section
+local trailLabel = Instance.new("TextLabel")
+trailLabel.Name = "TrailLabel"
+trailLabel.Size = UDim2.new(0.9, 0, 0, 25)
+trailLabel.Position = UDim2.new(0.05, 0, 0, 1183)
+trailLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+trailLabel.BorderSizePixel = 1
+trailLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
+trailLabel.Text = "Trail Mode: OFF"
+trailLabel.TextColor3 = Color3.fromRGB(100, 255, 200)
+trailLabel.TextSize = 13
+trailLabel.Font = Enum.Font.SourceSansBold
+trailLabel.Parent = scrollFrame
+
+-- Trail Toggle Button
+local trailToggle = Instance.new("TextButton")
+trailToggle.Name = "TrailToggle"
+trailToggle.Size = UDim2.new(0.9, 0, 0, 50)
+trailToggle.Position = UDim2.new(0.05, 0, 0, 1213)
+trailToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+trailToggle.BorderSizePixel = 1
+trailToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
+trailToggle.Text = "Rainbow Trail to Limbs\n(Red→Orange→Yellow→Green→Blue→Purple→Pink)"
+trailToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+trailToggle.TextSize = 11
+trailToggle.Font = Enum.Font.SourceSansBold
+trailToggle.Parent = scrollFrame
+
+-- Orbit Button (moved down)
 local orbitButton = Instance.new("TextButton")
 orbitButton.Name = "OrbitButton"
 orbitButton.Size = UDim2.new(0.9, 0, 0, 45)
-orbitButton.Position = UDim2.new(0.05, 0, 0, 1188)
+orbitButton.Position = UDim2.new(0.05, 0, 0, 1278)
 orbitButton.BackgroundColor3 = Color3.fromRGB(50, 120, 50)
 orbitButton.BorderSizePixel = 1
 orbitButton.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -364,18 +395,21 @@ orbitButton.Parent = scrollFrame
 -- Info Label
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Name = "InfoLabel"
-infoLabel.Size = UDim2.new(0.9, 0, 0, 310)
-infoLabel.Position = UDim2.new(0.05, 0, 0, 1248)
+infoLabel.Size = UDim2.new(0.9, 0, 0, 380)
+infoLabel.Position = UDim2.new(0.05, 0, 0, 1338)
 infoLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
 infoLabel.BorderSizePixel = 1
 infoLabel.BorderColor3 = Color3.fromRGB(80, 80, 100)
-infoLabel.Text = "🔷 20 ORBIT SHAPES: Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star, Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity, Flower, DNA, Tornado, Galaxy, Rings, Mobius\n\n✨ Perfect Polygon Formation: Parts auto-arrange into perfect geometric shapes!\n\n🎭 14 ANIMATIONS: Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist, Orbit, Flip, Stretch, Swirl, Jitter, Wave\n\n🔲 9 WIREFRAME 3D SHAPES: Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron, Torus, Cylinder, Dodecahedron, Sphere\n\n🔨 3D Hammer Mode:\n• Hammer follows block rotation (X/Z axis)\n• 16x16x3 studs with depth\n• Positioned 4 studs beside block\n• SMASHES ground on impact!\n• Unused parts EXPLODE at impact zone!"
+infoLabel.Text = "🔷 20 ORBIT SHAPES: Circle, Sphere, Cube, Spiral, Wave, Helix, Figure 8, Star, Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity, Flower, DNA, Tornado, Galaxy, Rings, Mobius\n\n✨ Perfect Polygon Formation: Parts auto-arrange into perfect geometric shapes!\n\n🎭 14 ANIMATIONS: Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist, Orbit, Flip, Stretch, Swirl, Jitter, Wave\n\n🔲 9 WIREFRAME 3D SHAPES: Cube, Pyramid, Octahedron, Tetrahedron, Icosahedron, Torus, Cylinder, Dodecahedron, Sphere\n\n🔨 3D Hammer Mode:\n• Hammer follows block rotation (X/Z axis)\n• 16x16x3 studs with depth\n• Positioned 4 studs beside block\n• SMASHES ground on impact!\n• Unused parts EXPLODE at impact zone!\n\n🌈 TRAIL MODE:\n• Parts teleport to your limbs in rainbow order!\n• Red → Orange → Yellow → Green → Blue → Purple → Pink\n• Cycles through colors automatically\n• Perfect for creating epic visual trails!"
 infoLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
 infoLabel.TextSize = 10
 infoLabel.Font = Enum.Font.SourceSans
 infoLabel.TextWrapped = true
 infoLabel.TextYAlignment = Enum.TextYAlignment.Top
 infoLabel.Parent = scrollFrame
+
+-- Update canvas size
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1950)
 
 -- Functions
 local function isPartUnlocked(part)
@@ -477,6 +511,167 @@ local function destroyHammer()
 	hammerLabel.Text = "Hammer Mode: OFF"
 	hammerToggle.Text = "Create Hammer (16x16 studs)"
 	hammerToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+end
+
+-- Trail Mode Functions
+local function getColorOrder(color)
+	-- Define rainbow color order with tolerance for color matching
+	local rainbowColors = {
+		{name = "Red", color = Color3.fromRGB(255, 0, 0), order = 1},
+		{name = "Orange", color = Color3.fromRGB(255, 127, 0), order = 2},
+		{name = "Yellow", color = Color3.fromRGB(255, 255, 0), order = 3},
+		{name = "Green", color = Color3.fromRGB(0, 255, 0), order = 4},
+		{name = "Blue", color = Color3.fromRGB(0, 0, 255), order = 5},
+		{name = "Purple", color = Color3.fromRGB(148, 0, 211), order = 6},
+		{name = "Pink", color = Color3.fromRGB(255, 192, 203), order = 7}
+	}
+	
+	-- Find closest matching color
+	local closestColor = rainbowColors[1]
+	local minDistance = math.huge
+	
+	for _, rainbowColor in ipairs(rainbowColors) do
+		local distance = (color.R - rainbowColor.color.R)^2 + 
+		                 (color.G - rainbowColor.color.G)^2 + 
+		                 (color.B - rainbowColor.color.B)^2
+		
+		if distance < minDistance then
+			minDistance = distance
+			closestColor = rainbowColor
+		end
+	end
+	
+	return closestColor.order, closestColor.name
+end
+
+local function stopTrail()
+	if trailConnection then
+		trailConnection:Disconnect()
+		trailConnection = nil
+	end
+	
+	-- Clear network ownership from trail parts
+	for _, part in ipairs(trailParts) do
+		if part and part.Parent then
+			pcall(function()
+				part:SetNetworkOwnershipAuto()
+			end)
+		end
+	end
+	
+	trailParts = {}
+	trailMode = false
+	trailLabel.Text = "Trail Mode: OFF"
+	trailToggle.Text = "Rainbow Trail to Limbs\n(Red→Orange→Yellow→Green→Blue→Purple→Pink)"
+	trailToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+end
+
+local function startTrail()
+	stopTrail()
+	
+	local character = player.Character
+	if not character then
+		warn("Character not found!")
+		return
+	end
+	
+	-- Find all unlocked unanchored parts
+	local allParts = {}
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and not character:IsAncestorOf(obj) then
+			if isPartUnlocked(obj) and not obj.Anchored then
+				table.insert(allParts, obj)
+				setNetworkOwnership(obj)
+			end
+		end
+	end
+	
+	if #allParts == 0 then
+		warn("No unlocked unanchored parts found for trail!")
+		return
+	end
+	
+	-- Sort parts by color (rainbow order)
+	table.sort(allParts, function(a, b)
+		local orderA = getColorOrder(a.Color)
+		local orderB = getColorOrder(b.Color)
+		return orderA < orderB
+	end)
+	
+	trailParts = allParts
+	trailMode = true
+	trailLabel.Text = "Trail Mode: ON (" .. #trailParts .. " parts)"
+	trailToggle.Text = "Stop Trail Mode"
+	trailToggle.BackgroundColor3 = Color3.fromRGB(120, 50, 120)
+	
+	print("🌈 Trail Mode: " .. #trailParts .. " parts following limbs in rainbow order!")
+	
+	-- Define limb attachment points in order
+	local limbOrder = {
+		"Head",
+		"Right Arm", "RightUpperArm", "RightLowerArm", "RightHand",
+		"Left Arm", "LeftUpperArm", "LeftLowerArm", "LeftHand",
+		"Right Leg", "RightUpperLeg", "RightLowerLeg", "RightFoot",
+		"Left Leg", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot",
+		"Torso", "UpperTorso", "LowerTorso"
+	}
+	
+	-- Trail animation
+	trailConnection = RunService.Heartbeat:Connect(function()
+		if not character or not character.Parent then
+			stopTrail()
+			return
+		end
+		
+		local limbIndex = 1
+		
+		for i, part in ipairs(trailParts) do
+			if part and part.Parent then
+				-- Cycle through limbs
+				local currentLimb = nil
+				local attempts = 0
+				
+				while not currentLimb and attempts < #limbOrder do
+					local limbName = limbOrder[((limbIndex - 1) % #limbOrder) + 1]
+					currentLimb = character:FindFirstChild(limbName)
+					limbIndex = limbIndex + 1
+					attempts = attempts + 1
+				end
+				
+				if currentLimb and currentLimb:IsA("BasePart") then
+					-- Teleport part to limb position with slight offset
+					local offsetAngle = (i / #trailParts) * math.pi * 2
+					local offset = Vector3.new(
+						math.cos(offsetAngle) * 0.5,
+						math.sin(offsetAngle) * 0.5,
+						math.sin(offsetAngle * 2) * 0.5
+					)
+					
+					local targetPos = currentLimb.Position + offset
+					
+					-- Smooth teleport with velocity
+					local direction = (targetPos - part.Position)
+					local distance = direction.Magnitude
+					
+					if distance > 0.5 then
+						-- Quick teleport to limb
+						part.CFrame = CFrame.new(targetPos)
+						part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+					else
+						-- Stay attached to limb
+						part.AssemblyLinearVelocity = (targetPos - part.Position) * 20
+					end
+					
+					-- Smooth rotation
+					part.AssemblyAngularVelocity = Vector3.new(
+						math.sin(tick() * 2 + i) * 3,
+						math.cos(tick() * 2 + i) * 3,
+						0
+					)
+				end
+			end
+		end
+	end)
 end
 
 local function createHammer()
@@ -1685,6 +1880,15 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	end
 end)
 
+-- Trail Mode Events
+trailToggle.MouseButton1Click:Connect(function()
+	if trailMode then
+		stopTrail()
+	else
+		startTrail()
+	end
+end)
+
 orbitButton.MouseButton1Click:Connect(function()
 	if orbitConnection then
 		stopOrbiting()
@@ -1708,6 +1912,7 @@ player.CharacterAdded:Connect(function()
 	stopOrbiting()
 	clearSelection()
 	destroyHammer()
+	stopTrail()
 end)
 
 print("🌟 ULTIMATE Orbit Parts Script with TONS of Features! 🌟")
@@ -1721,6 +1926,7 @@ print("6. Toggle Wireframe Mode for 9 3D shapes")
 print("7. Create 3D Hammer (16x16x3 studs) - positioned 4 studs beside block")
 print("8. Hammer follows block rotation on X and Z axes")
 print("9. Press M or click 'SMASH GROUND' - unused parts EXPLODE at impact!")
+print("10. 🌈 TRAIL MODE - Parts teleport to limbs in rainbow color order!")
 print("")
 print("✨✨ NEW FEATURES ✨✨")
 print("🔷 20 ORBIT SHAPES:")
@@ -1740,3 +1946,5 @@ print("🔨 3D Hammer with depth - follows block rotation")
 print("💥 Ground Impact - hammer smashes down, parts explode at impact zone!")
 print("👁️ Hide Selection Box toggle - enjoy unobstructed views!")
 print("📐 Perfect Polygon Formation - parts auto-arrange perfectly")
+print("🌈 TRAIL MODE - Parts follow your limbs in rainbow order!")
+print("   Red → Orange → Yellow → Green → Blue → Purple → Pink → Repeat")
