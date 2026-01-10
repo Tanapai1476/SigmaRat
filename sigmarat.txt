@@ -508,23 +508,23 @@ local function createHammer()
 	-- Head: 10 studs wide, 4 studs tall, 3 studs deep
 	local hammerPositions = {}
 	
-	-- Create handle (2x12x3 vertical column) - oriented along Z axis
+	-- Create handle (2x12x3 vertical column)
 	for y = 0, 11 do
-		for z = -0.5, 0.5, 1 do
-			for x = -1, 1, 1 do
+		for x = -0.5, 0.5, 1 do
+			for z = -1, 1, 1 do
 				table.insert(hammerPositions, Vector3.new(x, y, z))
 			end
 		end
 	end
 	
-	-- Create hammer head (10x4x3 solid block at top) - perpendicular to handle
+	-- Create hammer head (10x4x3 solid block at top)
 	for y = 12, 15 do
-		for z = -5, 4, 1 do
-			for x = -1, 1, 1 do
+		for x = -5, 4, 1 do
+			for z = -1, 1, 1 do
 				-- Make front/back and sides visible, with some interior structure
-				if x == -1 or x == 1 or z == -5 or z == 4 or y == 12 or y == 15 then
+				if z == -1 or z == 1 or x == -5 or x == 4 or y == 12 or y == 15 then
 					table.insert(hammerPositions, Vector3.new(x, y, z))
-				elseif (y == 13 or y == 14) and (z == -2 or z == 1) and x == 0 then
+				elseif (y == 13 or y == 14) and (x == -2 or x == 1) and z == 0 then
 					-- Interior support beams
 					table.insert(hammerPositions, Vector3.new(x, y, z))
 				end
@@ -568,20 +568,20 @@ local function createHammer()
 		local blockCFrame = selectedPart.CFrame
 		local blockRotation = blockCFrame - blockCFrame.Position
 		
-		-- Position hammer 4 studs in front of the block (using LookVector for forward direction)
-		local basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+		-- Position hammer 4 studs beside the block using the block's right vector
+		local basePos = selectedPart.Position + blockCFrame.RightVector * 4 + Vector3.new(0, 8, 0)
 		
 		-- Update each hammer part to its designated position with rotation
 		for i, part in ipairs(hammerParts) do
 			if part and part.Parent and hammerPositions[i] then
 				local offset = hammerPositions[i]
 				
-				-- Apply idle rotation around Y axis only
+				-- Apply idle rotation
 				local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
 				local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
 				local rotatedOffset = Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
 				
-				-- Apply block rotation to offset (hammer rotates with block on X and Z axes)
+				-- Apply block rotation to offset
 				local worldOffset = blockRotation * rotatedOffset
 				local targetPos = basePos + worldOffset
 				
@@ -656,13 +656,13 @@ local function smashHammer()
 	local unusedParts = hammerStatue.unusedParts
 	local hasExploded = false
 	
-	-- Get block rotation and positions
+	-- Get block rotation
 	local blockCFrame = selectedPart.CFrame
 	local blockRotation = blockCFrame - blockCFrame.Position
-	local basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+	local basePos = selectedPart.Position + blockCFrame.RightVector * 4 + Vector3.new(0, 8, 0)
 	
-	-- Calculate ground position (where hammer head will hit) - adjusted for hammer length
-	local groundPos = selectedPart.Position + Vector3.new(0, -8, 0)
+	-- Find ground position (impact point)
+	local groundPos = selectedPart.Position + Vector3.new(0, -2, 0)
 	
 	hammerConnection = RunService.Heartbeat:Connect(function()
 		if not selectedPart or not selectedPart.Parent then
@@ -673,28 +673,21 @@ local function smashHammer()
 		-- Update rotation in case block rotates during smash
 		blockCFrame = selectedPart.CFrame
 		blockRotation = blockCFrame - blockCFrame.Position
-		basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
-		groundPos = selectedPart.Position + Vector3.new(0, -8, 0)
+		basePos = selectedPart.Position + blockCFrame.RightVector * 4 + Vector3.new(0, 8, 0)
+		groundPos = selectedPart.Position + Vector3.new(0, -2, 0)
 		
 		local elapsed = tick() - smashStartTime
 		local progress = math.min(elapsed / smashDuration, 1)
 		
 		if progress < 0.25 then
-			-- Phase 1: Lift hammer up high and rotate to striking position
+			-- Phase 1: Lift hammer up high
 			local liftProgress = progress / 0.25
 			local liftHeight = liftProgress * 25
-			local tiltAngle = liftProgress * (math.pi / 2) -- Rotate 90 degrees to point down
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerPositions[i] then
 					local offset = hammerPositions[i]
-					
-					-- Rotate hammer to point downward
-					local tiltedY = offset.Y * math.cos(tiltAngle) - offset.Z * math.sin(tiltAngle)
-					local tiltedZ = offset.Y * math.sin(tiltAngle) + offset.Z * math.cos(tiltAngle)
-					local tiltedOffset = Vector3.new(offset.X, tiltedY + liftHeight, tiltedZ)
-					
-					local worldOffset = blockRotation * tiltedOffset
+					local worldOffset = blockRotation * Vector3.new(offset.X, offset.Y + liftHeight, offset.Z)
 					local partTargetPos = basePos + worldOffset
 					
 					local direction = (partTargetPos - part.Position)
@@ -726,21 +719,14 @@ local function smashHammer()
 			end
 			
 		elseif progress < 0.65 then
-			-- Phase 2: SMASH DOWN TO GROUND with hammer rotated
+			-- Phase 2: SMASH DOWN TO GROUND!
 			local smashProgress = (progress - 0.25) / 0.4
-			local currentHeight = 25 - (smashProgress * 41) -- Go from +25 to -16 (below ground)
-			local tiltAngle = math.pi / 2 -- Keep rotated 90 degrees
+			local currentHeight = 25 - (smashProgress * 35) -- Go from +25 to -10 (below ground)
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerPositions[i] then
 					local offset = hammerPositions[i]
-					
-					-- Keep hammer rotated downward
-					local tiltedY = offset.Y * math.cos(tiltAngle) - offset.Z * math.sin(tiltAngle)
-					local tiltedZ = offset.Y * math.sin(tiltAngle) + offset.Z * math.cos(tiltAngle)
-					local tiltedOffset = Vector3.new(offset.X, tiltedY + currentHeight, tiltedZ)
-					
-					local worldOffset = blockRotation * tiltedOffset
+					local worldOffset = blockRotation * Vector3.new(offset.X, offset.Y + currentHeight, offset.Z)
 					local partTargetPos = basePos + worldOffset
 					
 					local direction = (partTargetPos - part.Position)
@@ -811,13 +797,13 @@ local function smashHammer()
 				-- Update rotation
 				blockCFrame = selectedPart.CFrame
 				blockRotation = blockCFrame - blockCFrame.Position
-				basePos = selectedPart.Position + blockCFrame.LookVector * 4 + Vector3.new(0, 8, 0)
+				basePos = selectedPart.Position + blockCFrame.RightVector * 4 + Vector3.new(0, 8, 0)
 				
 				for i, part in ipairs(hammerParts) do
 					if part and part.Parent and hammerPositions[i] then
 						local offset = hammerPositions[i]
 						
-						-- Apply idle rotation around Y axis only
+						-- Apply idle rotation
 						local rotatedX = offset.X * math.cos(rotationAngle) - offset.Z * math.sin(rotationAngle)
 						local rotatedZ = offset.X * math.sin(rotationAngle) + offset.Z * math.cos(rotationAngle)
 						local rotatedOffset = Vector3.new(rotatedX, offset.Y + floatHeight, rotatedZ)
