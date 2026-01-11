@@ -224,7 +224,7 @@ shapeLabel.TextSize = 13
 shapeLabel.Font = Enum.Font.SourceSansBold
 shapeLabel.Parent = scrollFrame
 
--- All 50 Shape Buttons
+-- All 50 Shape Buttons + 6 UNDERTALE + 8 STAR GLITCHER SHAPES!
 local shapes = {
 	"Circle", "Sphere", "Cube", "Spiral", "Wave", "Helix", "Figure8", "Star",
 	"Pentagon", "Hexagon", "Octagon", "Diamond", "Heart", "Infinity", "Flower",
@@ -232,7 +232,9 @@ local shapes = {
 	"Hypercube", "Metatron", "Mandala", "Vortex", "Supernova", "Nebula", "BlackHole",
 	"Atom", "Molecule", "Crystal", "Fractal", "Fibonacci", "GoldenSpiral", "Lissajous",
 	"Butterfly", "Dragon", "Phoenix", "Serpent", "Crown", "Lotus", "Web", "Grid",
-	"Tesseract", "Slinky", "Coil", "Chain", "Constellation"
+	"Tesseract", "Slinky", "Coil", "Chain", "Constellation", "Soul", "Determination",
+	"Delta", "Gaster", "Bullet", "Chaos", "Astral", "Celestial", "Divine", "Spectrum",
+	"Stellar", "Runic", "Eclipse", "Ethereal"
 }
 
 local shapeButtons = {}
@@ -265,12 +267,13 @@ animLabel.TextSize = 13
 animLabel.Font = Enum.Font.SourceSansBold
 animLabel.Parent = scrollFrame
 
--- All 26 Animation Buttons
+-- All 26 Animation Buttons + 8 STAR GLITCHER ANIMATIONS!
 local animations = {
 	"None", "Pulse", "Expand", "Wobble", "Spin", "Shake", "Bounce", "Twist",
 	"Orbit", "Flip", "Stretch", "Swirl", "Jitter", "Wave", "Breathe", "Flicker",
 	"Rainbow", "Chaos", "Magnetic", "Repel", "Graviton", "Quantum", "Teleport",
-	"Phasing", "Morph", "Kaleidoscope"
+	"Phasing", "Morph", "Kaleidoscope", "AstralBeam", "CelestialBurst", "DivinePillars",
+	"SpectrumShift", "StellarOrbit", "RunicPulse", "EclipseSpin", "EtherealFloat"
 }
 
 local animButtons = {}
@@ -357,7 +360,7 @@ hammerLabel.Position = UDim2.new(0.05, 0, 0, currentY)
 hammerLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 hammerLabel.BorderSizePixel = 1
 hammerLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
-hammerLabel.Text = "Hammer Mode: OFF"
+hammerLabel.Text = "⚔️ HAMMER OF JUSTICE: OFF"
 hammerLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
 hammerLabel.TextSize = 13
 hammerLabel.Font = Enum.Font.SourceSansBold
@@ -372,7 +375,7 @@ hammerToggle.Position = UDim2.new(0.05, 0, 0, currentY)
 hammerToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 hammerToggle.BorderSizePixel = 1
 hammerToggle.BorderColor3 = Color3.fromRGB(100, 100, 100)
-hammerToggle.Text = "Create 3D Hammer (16x16x3)"
+hammerToggle.Text = "Create HAMMER OF JUSTICE"
 hammerToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 hammerToggle.TextSize = 13
 hammerToggle.Font = Enum.Font.SourceSansBold
@@ -419,10 +422,17 @@ infoLabel.BorderSizePixel = 1
 infoLabel.BorderColor3 = Color3.fromRGB(80, 80, 100)
 infoLabel.Text = [[🌟 MEGA ULTIMATE FEATURES 🌟
 
-✨ 50 ORBIT SHAPES - Massive variety!
+✨ 64 ORBIT SHAPES - MASSIVE variety!
+Including UNDERTALE/DELTARUNE + STAR GLITCHER themes!
+💙 Undertale: Soul, Determination, Delta Rune, Gaster, Bullet Hell, Chaos King
+🌟 Star Glitcher: Astral, Celestial, Divine, Spectrum, Stellar, Runic, Eclipse, Ethereal
+
 Circle, Sphere, Cube, Spiral, Wave, Helix, Figure8, Star, Pentagon, Hexagon, Octagon, Diamond, Heart, Infinity, Flower, DNA, Tornado, Galaxy, Rings, Mobius, Trefoil, Torus, Klein, Hypercube, Metatron, Mandala, Vortex, Supernova, Nebula, BlackHole, Atom, Molecule, Crystal, Fractal, Fibonacci, GoldenSpiral, Lissajous, Butterfly, Dragon, Phoenix, Serpent, Crown, Lotus, Web, Grid, Tesseract, Slinky, Coil, Chain, Constellation
 
-🎭 26 ANIMATIONS - Insane variety!
+🎭 34 ANIMATIONS - Insane variety!
+Including STAR GLITCHER effects!
+✨ Astral Beam, Celestial Burst, Divine Pillars, Spectrum Shift, Stellar Orbit, Runic Pulse, Eclipse Spin, Ethereal Float
+
 Pulse, Expand, Wobble, Spin, Shake, Bounce, Twist, Orbit, Flip, Stretch, Swirl, Jitter, Wave, Breathe, Flicker, Rainbow, Chaos, Magnetic, Repel, Graviton, Quantum, Teleport, Phasing, Morph, Kaleidoscope
 
 👼 ULTRAKILL WINGS - Epic angel wings!
@@ -432,7 +442,8 @@ Wings follow you and animate smoothly
 Auto-arranges parts by hue (keeps original colors!)
 Creates natural rainbow spectrum order
 
-🔨 3D HAMMER - Ground smash with explosion!]]
+🔨 HAMMER OF JUSTICE - Like the old man's hammer!
+Chunky war hammer that ROTATES and SMASHES ground!]]
 infoLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
 infoLabel.TextSize = 9
 infoLabel.Font = Enum.Font.SourceSans
@@ -699,8 +710,8 @@ local function destroyHammer()
 	
 	hammerParts = {}
 	hammerMode = false
-	hammerLabel.Text = "Hammer Mode: OFF"
-	hammerToggle.Text = "Create Hammer (16x16x3)"
+	hammerLabel.Text = "⚔️ HAMMER OF JUSTICE: OFF"
+	hammerToggle.Text = "Create HAMMER OF JUSTICE"
 	hammerToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 end
 
@@ -727,26 +738,37 @@ local function createHammer()
 		return
 	end
 	
+	-- HAMMER OF JUSTICE design (like Gerson's legendary hammer!)
+	-- Classic war hammer: long handle + big blocky head
 	local hammerPositions = {}
 	
-	for y = 0, 11 do
+	-- Handle: 2 studs wide, 10 studs tall (narrower for classic look)
+	for y = 0, 9 do
 		for x = -0.5, 0.5, 1 do
-			for z = -1, 1, 1 do
+			for z = -0.5, 0.5, 1 do
 				table.insert(hammerPositions, Vector3.new(x, y, z))
 			end
 		end
 	end
 	
-	for y = 12, 15 do
-		for x = -5, 4, 1 do
-			for z = -1, 1, 1 do
-				if z == -1 or z == 1 or x == -5 or x == 4 or y == 12 or y == 15 then
+	-- Hammer head: CHUNKY 12x6x6 block (old school war hammer style!)
+	for y = 10, 15 do
+		for x = -6, 5, 1 do
+			for z = -3, 2, 1 do
+				-- Create a solid, heavy looking hammer head
+				if z == -3 or z == 2 or x == -6 or x == 5 or y == 10 or y == 15 then
 					table.insert(hammerPositions, Vector3.new(x, y, z))
-				elseif (y == 13 or y == 14) and (x == -2 or x == 1) and z == 0 then
+				elseif (y == 12 or y == 13) and (x % 2 == 0) and (z % 2 == 0) then
+					-- Interior support beams for weight
 					table.insert(hammerPositions, Vector3.new(x, y, z))
 				end
 			end
 		end
+	end
+	
+	-- Add some spikes on top for extra intimidation! (Optional detail)
+	for i = -4, 3, 2 do
+		table.insert(hammerPositions, Vector3.new(i, 16, 0))
 	end
 	
 	for i = 1, math.min(#hammerPositions, #allParts) do
@@ -754,7 +776,7 @@ local function createHammer()
 	end
 	
 	hammerMode = true
-	hammerLabel.Text = "Hammer Mode: ON (" .. #hammerParts .. " parts)"
+	hammerLabel.Text = "⚔️ HAMMER OF JUSTICE: ON (" .. #hammerParts .. " parts)"
 	hammerToggle.Text = "Destroy Hammer"
 	hammerToggle.BackgroundColor3 = Color3.fromRGB(120, 50, 50)
 	
@@ -877,13 +899,21 @@ local function smashHammer()
 		local progress = math.min(elapsed / smashDuration, 1)
 		
 		if progress < 0.25 then
+			-- Phase 1: Lift hammer up high and rotate back for windup
 			local liftProgress = progress / 0.25
 			local liftHeight = liftProgress * 25
+			local windupRotation = liftProgress * math.pi * 0.8 -- Rotate 144 degrees back
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerPositions[i] then
 					local offset = hammerPositions[i]
-					local worldOffset = blockRotation * Vector3.new(offset.X, offset.Y + liftHeight, offset.Z)
+					
+					-- Apply windup rotation (rotating hammer backwards)
+					local rotatedY = offset.Y * math.cos(windupRotation) - offset.Z * math.sin(windupRotation)
+					local rotatedZ = offset.Y * math.sin(windupRotation) + offset.Z * math.cos(windupRotation)
+					local rotatedOffset = Vector3.new(offset.X, rotatedY + liftHeight, rotatedZ)
+					
+					local worldOffset = blockRotation * rotatedOffset
 					local partTargetPos = basePos + worldOffset
 					
 					local direction = (partTargetPos - part.Position)
@@ -892,14 +922,46 @@ local function smashHammer()
 				end
 			end
 			
+			-- Keep unused parts orbiting during windup
+			for i, part in ipairs(unusedParts) do
+				if part and part.Parent then
+					local angle = (i / #unusedParts) * math.pi * 2 + elapsed * 2
+					local radius = 12
+					local orbitOffset = Vector3.new(
+						math.cos(angle) * radius,
+						math.sin(elapsed * 3 + i) * 4,
+						math.sin(angle) * radius
+					)
+					local unusedPos = basePos + blockRotation * orbitOffset
+					
+					local direction = (unusedPos - part.Position)
+					part.AssemblyLinearVelocity = direction * 8
+					part.AssemblyAngularVelocity = Vector3.new(
+						math.sin(elapsed + i) * 4,
+						math.cos(elapsed + i) * 4,
+						0
+					)
+				end
+			end
+			
 		elseif progress < 0.65 then
+			-- Phase 2: ROTATE FORWARD AND SMASH DOWN TO GROUND!
 			local smashProgress = (progress - 0.25) / 0.4
-			local currentHeight = 25 - (smashProgress * 35)
+			local currentHeight = 25 - (smashProgress * 35) -- Go from +25 to -10 (below ground)
+			
+			-- Rotate from windup position (0.8π) to smash position (1.4π = past vertical)
+			local smashRotation = math.pi * 0.8 + (smashProgress * math.pi * 0.6)
 			
 			for i, part in ipairs(hammerParts) do
 				if part and part.Parent and hammerPositions[i] then
 					local offset = hammerPositions[i]
-					local worldOffset = blockRotation * Vector3.new(offset.X, offset.Y + currentHeight, offset.Z)
+					
+					-- Apply smashing rotation (hammer swings forward and down)
+					local rotatedY = offset.Y * math.cos(smashRotation) - offset.Z * math.sin(smashRotation)
+					local rotatedZ = offset.Y * math.sin(smashRotation) + offset.Z * math.cos(smashRotation)
+					local rotatedOffset = Vector3.new(offset.X, rotatedY + currentHeight, rotatedZ)
+					
+					local worldOffset = blockRotation * rotatedOffset
 					local partTargetPos = basePos + worldOffset
 					
 					local direction = (partTargetPos - part.Position)
@@ -908,20 +970,36 @@ local function smashHammer()
 				end
 			end
 			
+			-- Pull unused parts toward impact zone
+			if smashProgress > 0.3 then
+				for i, part in ipairs(unusedParts) do
+					if part and part.Parent then
+						local direction = (groundPos - part.Position)
+						part.AssemblyLinearVelocity = direction.Unit * 40
+					end
+				end
+			end
+			
+			-- EXPLODE UNUSED PARTS at impact moment (when hammer hits ground)
 			if smashProgress > 0.8 and not hasExploded then
 				hasExploded = true
+				print("💥 GROUND IMPACT EXPLOSION! " .. #unusedParts .. " parts exploding from impact zone!")
 				
 				for _, part in ipairs(unusedParts) do
 					if part and part.Parent then
+						-- Calculate direction from ground impact point
 						local directionFromImpact = (part.Position - groundPos).Unit
-						local explosionForce = 200
+						local distance = (part.Position - groundPos).Magnitude
+						local explosionForce = math.max(15, 1 - (distance / 100)) * 200
 						
+						-- Launch parts outward from ground impact with massive force
 						part.AssemblyLinearVelocity = directionFromImpact * explosionForce + Vector3.new(
 							math.random(-40, 40),
-							math.random(80, 150),
+							math.random(80, 150), -- High upward force
 							math.random(-40, 40)
 						)
 						
+						-- Crazy spinning
 						part.AssemblyAngularVelocity = Vector3.new(
 							math.random(-25, 25),
 							math.random(-25, 25),
@@ -1363,6 +1441,196 @@ local function calculatePosition(centerPos, angle, radius, height, time, index, 
 		x = math.cos(clusterAngle + starAngle) * starDist
 		z = math.sin(clusterAngle + starAngle) * starDist
 		y = height + math.random(-3, 3)
+		
+	-- UNDERTALE/DELTARUNE SHAPES! 💙
+	elseif orbitShape == "Soul" then
+		-- Heart-shaped SOUL (like the player's SOUL)
+		local t = angle
+		local soulScale = radius * 0.08
+		x = soulScale * 16 * math.sin(t)^3
+		z = soulScale * (13 * math.cos(t) - 5 * math.cos(2*t) - 2 * math.cos(3*t) - math.cos(4*t))
+		y = height + math.sin(time * 2) * 1.5 -- Gentle floating
+		
+	elseif orbitShape == "Determination" then
+		-- Striped barrier pattern (like the SAVE point barriers)
+		local stripes = 8
+		local stripe = math.floor((index - 1) / (total / stripes)) % stripes
+		local stripeHeight = stripe * 2 - 7
+		local stripeRadius = radius * (0.7 + (stripe % 2) * 0.3)
+		x = math.cos(angle + stripe * 0.3) * stripeRadius
+		z = math.sin(angle + stripe * 0.3) * stripeRadius
+		y = height + stripeHeight + math.sin(time * 3 + stripe) * 0.5
+		
+	elseif orbitShape == "Delta" then
+		-- Delta Rune triangle formation
+		local triangles = 3
+		local tri = math.floor((index - 1) / (total / triangles)) % triangles
+		local triAngle = tri / triangles * math.pi * 2 - math.pi / 2
+		local triProgress = ((index - 1) % (total / triangles)) / (total / triangles)
+		
+		-- Create triangle edges
+		local corner = math.floor(triProgress * 3)
+		local edgeProgress = (triProgress * 3) % 1
+		
+		local corners = {
+			Vector3.new(0, radius, 0),
+			Vector3.new(radius * math.cos(math.pi / 6), -radius * 0.5, radius * math.sin(math.pi / 6)),
+			Vector3.new(radius * math.cos(math.pi * 7 / 6), -radius * 0.5, radius * math.sin(math.pi * 7 / 6))
+		}
+		
+		local nextCorner = (corner + 1) % 3 + 1
+		local pos = corners[corner + 1]:Lerp(corners[nextCorner], edgeProgress)
+		
+		x = pos.X * math.cos(time * 0.5) - pos.Z * math.sin(time * 0.5)
+		y = pos.Y + height
+		z = pos.X * math.sin(time * 0.5) + pos.Z * math.cos(time * 0.5)
+		
+	elseif orbitShape == "Gaster" then
+		-- Mysterious scattered pattern (Gaster/Wingdings style)
+		local scatter = math.random() * radius * 1.5
+		local scatterAngle = angle + math.random() * math.pi * 2
+		local flicker = (math.sin(time * 10 + index) > 0.3) and 1 or 0
+		x = math.cos(scatterAngle) * scatter * flicker
+		z = math.sin(scatterAngle) * scatter * flicker
+		y = height + math.random(-5, 5) * flicker
+		
+	elseif orbitShape == "Bullet" then
+		-- Bullet hell danmaku patterns
+		local waves = 4
+		local wave = math.floor((index - 1) / (total / waves)) % waves
+		local waveAngle = angle + wave * (math.pi * 2 / waves)
+		local bulletSpeed = time * 3
+		local bulletRadius = radius * (0.5 + (bulletSpeed % 1) * 0.5)
+		x = math.cos(waveAngle + bulletSpeed) * bulletRadius
+		z = math.sin(waveAngle + bulletSpeed) * bulletRadius
+		y = height + math.sin(waveAngle * 3 + bulletSpeed) * 4
+		
+	elseif orbitShape == "Chaos" then
+		-- Chaos King / Spade King chaotic spider pattern
+		local legs = 6
+		local leg = math.floor((index - 1) / (total / legs)) % legs
+		local legAngle = leg / legs * math.pi * 2
+		local legProgress = ((index - 1) % (total / legs)) / (total / legs)
+		
+		-- Spider leg curve
+		local legReach = radius * (0.3 + legProgress * 0.7)
+		local legCurve = math.sin(legProgress * math.pi) * radius * 0.3
+		local chaosWave = math.sin(time * 4 + leg) * 2
+		
+		x = math.cos(legAngle) * legReach + math.sin(legProgress * math.pi * 2) * legCurve
+		z = math.sin(legAngle) * legReach + math.cos(legProgress * math.pi * 2) * legCurve
+		y = height + legProgress * 5 - 2.5 + chaosWave
+		
+	-- STAR GLITCHER REVITALIZED SHAPES! ✨🌟💫
+	elseif orbitShape == "Astral" then
+		-- Green magic circles with upward energy beam
+		local rings = 4
+		local ring = math.floor((index - 1) / (total / rings)) % rings
+		local ringRadius = radius * (0.3 + ring * 0.2)
+		local ringAngle = angle + ring * 0.5 + time * (1 + ring * 0.3)
+		
+		x = math.cos(ringAngle) * ringRadius
+		z = math.sin(ringAngle) * ringRadius
+		y = height - 3 + ring * 0.5 + math.sin(time * 3 + ring) * 0.3
+		
+	elseif orbitShape == "Celestial" then
+		-- Purple/pink cosmic circles with star burst
+		local layers = 5
+		local layer = math.floor((index - 1) / (total / layers)) % layers
+		
+		if layer < 3 then
+			-- Inner rotating circles
+			local circleRadius = radius * (0.2 + layer * 0.25)
+			local circleAngle = angle * (1 + layer * 0.3) + time * 2
+			x = math.cos(circleAngle) * circleRadius
+			z = math.sin(circleAngle) * circleRadius
+			y = height - 2 + layer * 0.5
+		else
+			-- Outer star burst rays
+			local rayAngle = angle + (layer - 3) * (math.pi * 2 / 8)
+			local rayDist = radius * (0.5 + math.sin(time * 4) * 0.3)
+			x = math.cos(rayAngle) * rayDist
+			z = math.sin(rayAngle) * rayDist
+			y = height + math.sin(time * 3 + layer) * 2
+		end
+		
+	elseif orbitShape == "Divine" then
+		-- Holy light pillars reaching skyward
+		local pillars = 8
+		local pillar = math.floor((index - 1) / (total / pillars)) % pillars
+		local pillarAngle = pillar / pillars * math.pi * 2
+		local pillarHeight = ((index - 1) % (total / pillars)) / (total / pillars)
+		
+		local pillarRadius = radius * (0.6 + math.sin(time * 2 + pillar) * 0.2)
+		x = math.cos(pillarAngle) * pillarRadius
+		z = math.sin(pillarAngle) * pillarRadius
+		y = height + pillarHeight * 15 + math.sin(time * 3 + pillar + pillarHeight * 5) * 2
+		
+	elseif orbitShape == "Spectrum" then
+		-- Rainbow shifting magic circles (works great with color sorting!)
+		local waves = 6
+		local wave = math.floor((index - 1) / (total / waves)) % waves
+		local waveAngle = angle + wave * (math.pi / 3) + time
+		local waveRadius = radius * (0.4 + wave * 0.1)
+		
+		x = math.cos(waveAngle) * waveRadius
+		z = math.sin(waveAngle) * waveRadius
+		y = height - 2 + math.sin(waveAngle * 3 + time * 2) * 3
+		
+	elseif orbitShape == "Stellar" then
+		-- Orbiting stars around magic circles
+		local orbits = 3
+		local orbit = math.floor((index - 1) / (total / orbits)) % orbits
+		local orbitAngle = angle * (2 + orbit) + time * (1 + orbit * 0.5)
+		local orbitRadius = radius * (0.4 + orbit * 0.25)
+		
+		-- Add secondary rotation for star effect
+		local starAngle = time * 5 + index
+		local starOffset = 1.5
+		x = math.cos(orbitAngle) * orbitRadius + math.cos(starAngle) * starOffset
+		z = math.sin(orbitAngle) * orbitRadius + math.sin(starAngle) * starOffset
+		y = height + math.sin(orbitAngle * 2) * 2
+		
+	elseif orbitShape == "Runic" then
+		-- Ancient rune circle patterns
+		local runes = 12
+		local rune = math.floor((index - 1) / (total / runes)) % runes
+		local runeAngle = rune / runes * math.pi * 2 + time * 0.5
+		local runeRadius = radius * (0.7 + math.sin(time * 2 + rune) * 0.15)
+		
+		-- Create runic symbols in circular pattern
+		local symbolOffset = ((index - 1) % (total / runes)) / (total / runes) * 2 - 1
+		x = math.cos(runeAngle) * runeRadius + math.sin(runeAngle) * symbolOffset * 0.5
+		z = math.sin(runeAngle) * runeRadius - math.cos(runeAngle) * symbolOffset * 0.5
+		y = height - 1 + math.abs(symbolOffset) * 2
+		
+	elseif orbitShape == "Eclipse" then
+		-- Eclipse shadow and light effect
+		local crescents = 2
+		local crescent = (index % crescents)
+		local crescentAngle = angle + crescent * math.pi + time
+		
+		-- Create crescent moon shapes
+		local innerRadius = radius * 0.5
+		local outerRadius = radius * 0.8
+		local blend = (math.sin(angle * 8) + 1) / 2
+		local eclipseRadius = innerRadius + (outerRadius - innerRadius) * blend
+		
+		x = math.cos(crescentAngle) * eclipseRadius
+		z = math.sin(crescentAngle) * eclipseRadius
+		y = height + math.sin(crescentAngle * 3 + time * 2) * 2
+		
+	elseif orbitShape == "Ethereal" then
+		-- Floating ethereal wisps and particles
+		local wisps = 5
+		local wisp = math.floor((index - 1) / (total / wisps)) % wisps
+		local wispAngle = angle + wisp * (math.pi * 2 / wisps) + math.sin(time + wisp) * 0.5
+		local wispRadius = radius * (0.3 + math.sin(time * 2 + wisp) * 0.4)
+		
+		-- Floating motion
+		x = math.cos(wispAngle) * wispRadius + math.sin(time * 3 + wisp) * 2
+		z = math.sin(wispAngle) * wispRadius + math.cos(time * 2.5 + wisp) * 2
+		y = height + math.sin(time * 1.5 + wisp + index * 0.1) * 4
 	end
 	
 	return centerPos + Vector3.new(x, y, z)
@@ -1586,6 +1854,104 @@ local function applyAnimation(part, targetPos, centerPos, time, index, total, ph
 			direction.X * math.sin(kaleidoAngle) + direction.Z * math.cos(kaleidoAngle)
 		)
 		return centerPos + rotated * mirror
+		
+	-- STAR GLITCHER REVITALIZED ANIMATIONS! ✨🌟💫
+	elseif animationMode == "AstralBeam" then
+		-- Upward energy beam effect
+		local beamPulse = 1 + math.sin(time * 5 + phaseOffset) * 0.2
+		local beamLift = math.sin(time * 2 + (index / total) * math.pi * 2) * 3
+		return targetPos + Vector3.new(0, beamLift * beamPulse, 0)
+		
+	elseif animationMode == "CelestialBurst" then
+		-- Star burst expansion and contraction
+		local burst = 1 + math.sin(time * 3) * 0.5
+		local burstSpin = time * 4 + (index / total) * math.pi * 2
+		local direction = (targetPos - centerPos)
+		local distance = direction.Magnitude
+		
+		-- Rotate and expand
+		local newAngle = math.atan2(direction.Z, direction.X) + burstSpin * 0.3
+		return centerPos + Vector3.new(
+			math.cos(newAngle) * distance * burst,
+			direction.Y + math.sin(time * 4 + phaseOffset) * 3,
+			math.sin(newAngle) * distance * burst
+		)
+		
+	elseif animationMode == "DivinePillars" then
+		-- Rising pillar effect with holy light
+		local pillarRise = math.abs(math.sin(time * 2 + (index / total) * math.pi)) * 8
+		local pillarSway = math.sin(time * 3 + phaseOffset) * 1.5
+		return targetPos + Vector3.new(pillarSway, pillarRise, pillarSway * 0.5)
+		
+	elseif animationMode == "SpectrumShift" then
+		-- Rainbow wave motion (perfect with color sorting!)
+		local spectrumWave = math.sin(time * 3 - (index / total) * math.pi * 4) * 4
+		local spectrumSpin = time * 2
+		local direction = (targetPos - centerPos)
+		local distance = direction.Magnitude
+		local currentAngle = math.atan2(direction.Z, direction.X)
+		
+		return centerPos + Vector3.new(
+			math.cos(currentAngle + spectrumSpin * 0.2) * distance,
+			direction.Y + spectrumWave,
+			math.sin(currentAngle + spectrumSpin * 0.2) * distance
+		)
+		
+	elseif animationMode == "StellarOrbit" then
+		-- Double orbit (orbit within orbit)
+		local innerOrbit = 2
+		local orbitAngle1 = time * 3 + phaseOffset
+		local orbitAngle2 = time * 5 + index
+		local orbit1 = Vector3.new(
+			math.cos(orbitAngle1) * innerOrbit,
+			math.sin(orbitAngle1 * 1.5) * innerOrbit,
+			math.sin(orbitAngle1) * innerOrbit
+		)
+		local orbit2 = Vector3.new(
+			math.cos(orbitAngle2) * 1,
+			math.sin(orbitAngle2 * 2) * 1,
+			math.sin(orbitAngle2) * 1
+		)
+		return targetPos + orbit1 + orbit2
+		
+	elseif animationMode == "RunicPulse" then
+		-- Pulsing rune energy
+		local runePulse = math.abs(math.sin(time * 4 + phaseOffset)) 
+		local runeGlow = 1 + runePulse * 0.4
+		local runeFloat = math.sin(time * 2 + (index / total) * math.pi * 2) * 2
+		local direction = (targetPos - centerPos).Unit
+		return centerPos + direction * (targetPos - centerPos).Magnitude * runeGlow + Vector3.new(0, runeFloat, 0)
+		
+	elseif animationMode == "EclipseSpin" then
+		-- Eclipse rotation effect
+		local eclipseAngle = time * 3
+		local eclipseRadius = 2 + math.sin(time * 2) * 1
+		local direction = (targetPos - centerPos)
+		local distance = direction.Magnitude
+		local baseAngle = math.atan2(direction.Z, direction.X)
+		
+		-- Create eclipse shadow motion
+		local shadowAngle = baseAngle + eclipseAngle
+		return centerPos + Vector3.new(
+			math.cos(shadowAngle) * distance,
+			direction.Y + math.sin(eclipseAngle * 2 + phaseOffset) * 3,
+			math.sin(shadowAngle) * distance
+		) + Vector3.new(
+			math.cos(time * 5 + index) * eclipseRadius,
+			0,
+			math.sin(time * 5 + index) * eclipseRadius
+		)
+		
+	elseif animationMode == "EtherealFloat" then
+		-- Ghostly floating wisps
+		local floatX = math.sin(time * 1.5 + phaseOffset) * 3
+		local floatY = math.sin(time * 2 + phaseOffset * 1.3) * 4
+		local floatZ = math.cos(time * 1.7 + phaseOffset) * 3
+		local fadePhase = (math.sin(time * 3 + phaseOffset) + 1) / 2
+		
+		-- Fade in and out motion
+		local fadeAmount = fadePhase * 0.5 + 0.5
+		return targetPos + Vector3.new(floatX, floatY, floatZ) * fadeAmount
 	end
 	
 	return targetPos
@@ -1709,7 +2075,7 @@ local function startOrbiting()
 					data.phaseOffset
 				)
 				
-				-- Rainbow mode doesn't change colors, just arranges them!
+				-- Rainbow mode doesn't change colors, just arranges them in spectrum order!
 				
 				local direction = (targetPos - part.Position)
 				local distance = direction.Magnitude
@@ -1842,10 +2208,13 @@ player.CharacterAdded:Connect(function()
 end)
 
 print("🌟🌟🌟 MEGA ULTIMATE ORBIT SCRIPT LOADED! 🌟🌟🌟")
-print("✨ 50 ORBIT SHAPES!")
-print("🎭 26 ANIMATIONS!")
+print("✨ 64 ORBIT SHAPES (UNDERTALE + STAR GLITCHER!)!")
+print("   💙 Undertale: Soul, Determination, Delta, Gaster, Bullet, Chaos!")
+print("   🌟 Star Glitcher: Astral, Celestial, Divine, Spectrum, Stellar, Runic, Eclipse, Ethereal!")
+print("🎭 34 ANIMATIONS (Including Star Glitcher effects!)!")
+print("   ✨ Astral Beam, Celestial Burst, Divine Pillars, Spectrum Shift, Stellar Orbit, Runic Pulse, Eclipse Spin, Ethereal Float!")
 print("👼 ULTRAKILL WINGS!")
-print("🌈 RAINBOW COLOR SORTING!")
-print("🔨 3D HAMMER WITH GROUND SMASH!")
+print("🌈 RAINBOW COLOR SORTING (works perfectly with Star Glitcher modes!)!")
+print("⚔️ HAMMER OF JUSTICE - The old man's legendary weapon!")
 print("")
 print("Your friends are gonna be SO IMPRESSED! uwu")
