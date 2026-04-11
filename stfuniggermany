@@ -4202,6 +4202,9 @@ local function createPhysicsTool()
         if not isToolEquipped then return end
         if part.Parent == player.Character then return end
         
+        -- Block selecting parts named "Grass"
+        if part.Name == "Grass" then return end
+        
         if studSelectMode and mouse then
             local studData = getClosestStudPosition(part, mouse.Hit.Position)
             if not studData then return end
