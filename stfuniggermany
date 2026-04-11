@@ -168,6 +168,7 @@ local constraintMode = "Core" -- "Core" or "Face"
 local constraintVisual = false
 local constraintCollision = true
 local selectedFaces = {} -- {part1 = Vector3.new(0,1,0), part2 = Vector3.new(0,-1,0)}
+local exactClickPositions = {} -- Stores exact local positions for "Exact Point" mode
 
 -- NEW: Physics extras storage
 local showForcesVisuals = {}
@@ -178,6 +179,7 @@ local physicsRecordings = {}
 local gravityGunActive = false
 local gravityGunPart = nil
 local physicsPaints = {}
+local magnetSettings = {strength = 500, snapDistance = 50} -- Dynamic magnet settings
 local kineticAmplifiers = {}
 local blackHoles = {}
 local buoyancyParts = {}
@@ -196,14 +198,19 @@ local partControllerData = {
     controlledPart = nil,
     bodyAngularVelocity = nil, -- NEW: for torque-based rolling
     bodyVelocity = nil,         -- NEW: for fly mode
+    bodyGyro = nil,             -- NEW: for fly mode camera orientation
     alignOrientation = nil,     -- NEW: for step mode
     rollSpeed = 50,
     torqueMultiplier = 10,      -- NEW: torque multiplier for rolling
+    gyroP = 50000,              -- NEW: BodyGyro P value (responsiveness)
+    gyroD = 5000,               -- NEW: BodyGyro D value (damping)
     jumpCharge = 0,             -- NEW: jump charge (0-1)
     isChargingJump = false,     -- NEW: is currently charging jump
     shapeType = "Auto", -- "Auto", "Sphere", "Cylinder", "Cube"
     flyMode = false,
     stepMode = false,
+    noRotation = false,         -- NEW: no roll/rotation mode
+    pureVelocity = false,       -- NEW: pure velocity mode
     delayedCamera = false,
     cameraConnection = nil,
     controlConnection = nil,
@@ -1114,6 +1121,31 @@ local function createPhysicsTool()
                             constraint.ServoMaxForce = advancedSettings.maxForce or math.huge
                             constraint.Speed = advancedSettings.hingeSpeed or 10
                         end
+                    elseif constraintType == "LinearSpring" then
+                        -- LinearSpring: Pure spring without prismatic
+                        constraint = Instance.new("SpringConstraint")
+                        constraint.FreeLength = (part1.Position - part2.Position).Magnitude
+                        constraint.Stiffness = advancedSettings.stiffness or 1000
+                        constraint.Damping = advancedSettings.damping or 100
+                        constraint.Visible = showSpringVisual or false
+                        print("  ✅ Applied LinearSpring (pure spring, no prismatic)")
+                    elseif constraintType == "TorsionSpring" then
+                        -- TorsionSpring: Rotational spring
+                        constraint = Instance.new("TorsionSpringConstraint")
+                        constraint.Stiffness = advancedSettings.stiffness or 1000
+                        constraint.Damping = advancedSettings.damping or 100
+                        constraint.MaxTorque = advancedSettings.maxTorque or math.huge
+                        constraint.Restitution = 0
+                        print("  ✅ Applied TorsionSpring (rotational spring)")
+                    elseif constraintType == "MatchRotation" then
+                        -- MatchRotation: AlignOrientation with spring behavior
+                        constraint = Instance.new("AlignOrientation")
+                        constraint.Mode = Enum.OrientationAlignmentMode.OneAttachment
+                        constraint.AlignType = Enum.AlignType.PrimaryAxisParallel
+                        constraint.MaxTorque = advancedSettings.maxTorque or 10000
+                        constraint.Responsiveness = advancedSettings.responsiveness or 10
+                        constraint.RigidityEnabled = false
+                        print("  ✅ Applied MatchRotation (align orientation with spring)")
                     elseif constraintType:find("Spring") then
                         constraint = Instance.new("SpringConstraint")
                         constraint.FreeLength = (part1.Position - part2.Position).Magnitude
@@ -1141,6 +1173,11 @@ local function createPhysicsTool()
                             local face1, face2 = findFurthestFaces(part1, part2)
                             prismaticAtt1.Position = (part1.Size/2) * face1
                             prismaticAtt2.Position = (part2.Size/2) * face2
+                        elseif constraintMode == "Exact Point" then
+                            local localPos1 = exactClickPositions[part1] or Vector3.new(0,0,0)
+                            local localPos2 = exactClickPositions[part2] or Vector3.new(0,0,0)
+                            prismaticAtt1.Position = localPos1
+                            prismaticAtt2.Position = localPos2
                         end
                         
                         prismaticAtt1.Parent = part1
@@ -1180,6 +1217,11 @@ local function createPhysicsTool()
                             local face1, face2 = findFurthestFaces(part1, part2)
                             attachment1.Position = (part1.Size/2) * face1
                             attachment2.Position = (part2.Size/2) * face2
+                        elseif constraintMode == "Exact Point" then
+                            local localPos1 = exactClickPositions[part1] or Vector3.new(0,0,0)
+                            local localPos2 = exactClickPositions[part2] or Vector3.new(0,0,0)
+                            attachment1.Position = localPos1
+                            attachment2.Position = localPos2
                         end
                         
                         attachment1.Parent = part1
@@ -1187,6 +1229,18 @@ local function createPhysicsTool()
                         
                         -- Set axis for Prismatic/Cylindrical constraints
                         if (constraintType:find("Prismatic") or constraintType:find("Cylindrical")) and advancedSettings.constraintAxis then
+                            local axisVector = Vector3.new(0, 1, 0) -- Default Y
+                            if advancedSettings.constraintAxis == "X" then
+                                axisVector = Vector3.new(1, 0, 0)
+                            elseif advancedSettings.constraintAxis == "Z" then
+                                axisVector = Vector3.new(0, 0, 1)
+                            end
+                            attachment1.Axis = axisVector
+                            attachment2.Axis = axisVector
+                        end
+                        
+                        -- Set axis for TorsionSpring
+                        if constraintType == "TorsionSpring" and advancedSettings.constraintAxis then
                             local axisVector = Vector3.new(0, 1, 0) -- Default Y
                             if advancedSettings.constraintAxis == "X" then
                                 axisVector = Vector3.new(1, 0, 0)
@@ -1293,6 +1347,31 @@ local function createPhysicsTool()
                         constraint = Instance.new("CylindricalConstraint")
                     elseif constraintType:find("Prismatic") then
                         constraint = Instance.new("PrismaticConstraint")
+                    elseif constraintType == "LinearSpring" then
+                        -- LinearSpring: Pure spring without prismatic
+                        constraint = Instance.new("SpringConstraint")
+                        constraint.FreeLength = (part1.Position - part2.Position).Magnitude
+                        constraint.Stiffness = advancedSettings.stiffness or 1000
+                        constraint.Damping = advancedSettings.damping or 100
+                        constraint.Visible = showSpringVisual or false
+                        print("  ✅ Applied LinearSpring (pure spring, no prismatic)")
+                    elseif constraintType == "TorsionSpring" then
+                        -- TorsionSpring: Rotational spring
+                        constraint = Instance.new("TorsionSpringConstraint")
+                        constraint.Stiffness = advancedSettings.stiffness or 1000
+                        constraint.Damping = advancedSettings.damping or 100
+                        constraint.MaxTorque = advancedSettings.maxTorque or math.huge
+                        constraint.Restitution = 0
+                        print("  ✅ Applied TorsionSpring (rotational spring)")
+                    elseif constraintType == "MatchRotation" then
+                        -- MatchRotation: AlignOrientation with spring behavior
+                        constraint = Instance.new("AlignOrientation")
+                        constraint.Mode = Enum.OrientationAlignmentMode.OneAttachment
+                        constraint.AlignType = Enum.AlignType.PrimaryAxisParallel
+                        constraint.MaxTorque = advancedSettings.maxTorque or 10000
+                        constraint.Responsiveness = advancedSettings.responsiveness or 10
+                        constraint.RigidityEnabled = false
+                        print("  ✅ Applied MatchRotation (align orientation with spring)")
                     elseif constraintType:find("Spring") then
                         constraint = Instance.new("SpringConstraint")
                         constraint.FreeLength = (firstPart.Position - part2.Position).Magnitude
@@ -1322,6 +1401,18 @@ local function createPhysicsTool()
                         
                         attachment1.Parent = firstPart
                         attachment2.Parent = part2
+                        
+                        -- Set axis for TorsionSpring
+                        if constraintType == "TorsionSpring" and advancedSettings.constraintAxis then
+                            local axisVector = Vector3.new(0, 1, 0) -- Default Y
+                            if advancedSettings.constraintAxis == "X" then
+                                axisVector = Vector3.new(1, 0, 0)
+                            elseif advancedSettings.constraintAxis == "Z" then
+                                axisVector = Vector3.new(0, 0, 1)
+                            end
+                            attachment1.Axis = axisVector
+                            attachment2.Axis = axisVector
+                        end
                         
                         constraint.Attachment0 = attachment1
                         constraint.Attachment1 = attachment2
@@ -2738,13 +2829,47 @@ local function createPhysicsTool()
                 part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 1)
                 physicsPaints[part] = {type = "Bouncy"}
             elseif paintType == "Magnetic" then
+                -- Dynamic Color-Based Magnet System
+                -- Red ↔ Blue = ATTRACT | Red ↔ Red / Blue ↔ Blue = REPEL
+                local magnetStrength = magnetSettings.strength or 500
+                local snapDistance = magnetSettings.snapDistance or 50
+                
                 local connection = RunService.Heartbeat:Connect(function()
                     if part.Parent then
                         for otherPart, data in pairs(physicsPaints) do
                             if data.type == "Magnetic" and otherPart ~= part and otherPart.Parent then
                                 local dist = (part.Position - otherPart.Position).Magnitude
-                                if dist < 50 then
-                                    local force = (otherPart.Position - part.Position).Unit * (500 / dist)
+                                
+                                if dist < snapDistance then
+                                    -- Determine colors (Red = R>0.5, Blue = B>0.5)
+                                    local partColor = part.Color
+                                    local otherColor = otherPart.Color
+                                    
+                                    local isPartRed = partColor.R > 0.5 and partColor.R > partColor.B
+                                    local isPartBlue = partColor.B > 0.5 and partColor.B > partColor.R
+                                    local isOtherRed = otherColor.R > 0.5 and otherColor.R > otherColor.B
+                                    local isOtherBlue = otherColor.B > 0.5 and otherColor.B > otherColor.R
+                                    
+                                    -- Determine if attract or repel
+                                    local shouldAttract = false
+                                    if (isPartRed and isOtherBlue) or (isPartBlue and isOtherRed) then
+                                        shouldAttract = true -- Opposite colors attract
+                                    elseif (isPartRed and isOtherRed) or (isPartBlue and isOtherBlue) then
+                                        shouldAttract = false -- Same colors repel
+                                    else
+                                        -- Neutral colors (not clearly red or blue) - no force
+                                        return
+                                    end
+                                    
+                                    -- Calculate force direction
+                                    local direction = (otherPart.Position - part.Position).Unit
+                                    if not shouldAttract then
+                                        direction = -direction -- Reverse for repulsion
+                                    end
+                                    
+                                    -- Apply force (inverse square law)
+                                    local forceMagnitude = magnetStrength / (dist * dist)
+                                    local force = direction * forceMagnitude
                                     part.AssemblyLinearVelocity = part.AssemblyLinearVelocity + force * 0.01
                                 end
                             end
@@ -4168,6 +4293,27 @@ local function createPhysicsTool()
         if constraintMode == "Face" and mouse then
             selectedFaces[part] = getClosestFace(part, mouse.Hit.Position)
             print("Selected face: " .. tostring(selectedFaces[part]))
+        elseif constraintMode == "Exact Point" and mouse then
+            -- Store the exact world position where the mouse hit
+            local hitPosition = mouse.Hit.Position
+            -- Convert to local position relative to the part
+            local localPosition = part.CFrame:PointToObjectSpace(hitPosition)
+            exactClickPositions[part] = localPosition
+            
+            -- Create a visual indicator at the exact point
+            local indicator = Instance.new("Part")
+            indicator.Name = "ExactPointIndicator_" .. part.Name
+            indicator.Size = Vector3.new(0.3, 0.3, 0.3)
+            indicator.Shape = Enum.PartType.Ball
+            indicator.CFrame = CFrame.new(hitPosition)
+            indicator.Anchored = true
+            indicator.CanCollide = false
+            indicator.Transparency = 0.3
+            indicator.Color = Color3.fromRGB(255, 0, 255)
+            indicator.Material = Enum.Material.Neon
+            indicator.Parent = workspace
+            
+            print("📍 Exact Point: " .. tostring(localPosition) .. " (World: " .. tostring(hitPosition) .. ")")
         end
     end
 
@@ -4175,10 +4321,17 @@ local function createPhysicsTool()
         for part, selectionBox in pairs(selectionBoxes) do
             if selectionBox and selectionBox.Parent then selectionBox:Destroy() end
         end
+        -- Clean up exact point indicators
+        for _, indicator in ipairs(workspace:GetChildren()) do
+            if indicator.Name and indicator.Name:match("^ExactPointIndicator_") then
+                indicator:Destroy()
+            end
+        end
         selectionBoxes = {}
         selectedParts = {}
         selectedStuds = {}
         selectedFaces = {}
+        exactClickPositions = {}
         
         tpLockedPart = nil
         tpSelectionBox = nil
@@ -4337,7 +4490,7 @@ local function createPhysicsTool()
         local panel = createPanel(parent, "⛓️ Constraints", 1)
         panel.Size = UDim2.new(0, 280, 0, 550)
         
-        local dropdown = createDropdown(panel, {"Rope", "Rod", "Hinge", "BallSocket", "Chain", "Plane", "Cylindrical", "Prismatic", "Spring", "NoCollision"})
+        local dropdown = createDropdown(panel, {"Rope", "Rod", "Hinge", "BallSocket", "Chain", "Plane", "Cylindrical", "Prismatic", "Spring", "LinearSpring", "TorsionSpring", "MatchRotation", "NoCollision"})
         dropdown.Position = UDim2.new(0, 10, 0, 40)
         dropdown.Size = UDim2.new(0, 110, 0, 25)
         
@@ -4391,10 +4544,41 @@ local function createPhysicsTool()
         dampingInput.Size = UDim2.new(0, 60, 0, 25)
         dampingInput.Text = "100"
         
+        -- TorsionSpring & MatchRotation Settings
+        local maxTorqueLabel = Instance.new("TextLabel")
+        maxTorqueLabel.Size = UDim2.new(0, 70, 0, 25)
+        maxTorqueLabel.Position = UDim2.new(0, 0, 0, 52)
+        maxTorqueLabel.BackgroundTransparency = 1
+        maxTorqueLabel.Text = "MaxTorque:"
+        maxTorqueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        maxTorqueLabel.TextSize = 9
+        maxTorqueLabel.Font = Enum.Font.GothamBold
+        maxTorqueLabel.TextXAlignment = Enum.TextXAlignment.Left
+        maxTorqueLabel.Parent = advancedFrame
+        
+        local maxTorqueInput = createNumberInput(advancedFrame, "1-inf", UDim2.new(0, 75, 0, 52))
+        maxTorqueInput.Size = UDim2.new(0, 50, 0, 25)
+        maxTorqueInput.Text = "10000"
+        
+        local responsivenessLabel = Instance.new("TextLabel")
+        responsivenessLabel.Size = UDim2.new(0, 90, 0, 25)
+        responsivenessLabel.Position = UDim2.new(0, 135, 0, 52)
+        responsivenessLabel.BackgroundTransparency = 1
+        responsivenessLabel.Text = "Responsiveness:"
+        responsivenessLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        responsivenessLabel.TextSize = 9
+        responsivenessLabel.Font = Enum.Font.GothamBold
+        responsivenessLabel.TextXAlignment = Enum.TextXAlignment.Left
+        responsivenessLabel.Parent = advancedFrame
+        
+        local responsivenessInput = createNumberInput(advancedFrame, "1-200", UDim2.new(0, 225, 0, 52))
+        responsivenessInput.Size = UDim2.new(0, 30, 0, 25)
+        responsivenessInput.Text = "10"
+        
         -- Hinge Settings
         local hingeTypeLabel = Instance.new("TextLabel")
         hingeTypeLabel.Size = UDim2.new(0, 80, 0, 25)
-        hingeTypeLabel.Position = UDim2.new(0, 0, 0, 55)
+        hingeTypeLabel.Position = UDim2.new(0, 0, 0, 82)
         hingeTypeLabel.BackgroundTransparency = 1
         hingeTypeLabel.Text = "Hinge Type:"
         hingeTypeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -4404,12 +4588,12 @@ local function createPhysicsTool()
         hingeTypeLabel.Parent = advancedFrame
         
         local hingeTypeDropdown = createDropdown(advancedFrame, {"None", "Motor", "Servo"})
-        hingeTypeDropdown.Position = UDim2.new(0, 80, 0, 55)
+        hingeTypeDropdown.Position = UDim2.new(0, 80, 0, 82)
         hingeTypeDropdown.Size = UDim2.new(0, 80, 0, 25)
         
         local hingeSpeedLabel = Instance.new("TextLabel")
         hingeSpeedLabel.Size = UDim2.new(0, 50, 0, 25)
-        hingeSpeedLabel.Position = UDim2.new(0, 170, 0, 55)
+        hingeSpeedLabel.Position = UDim2.new(0, 170, 0, 82)
         hingeSpeedLabel.BackgroundTransparency = 1
         hingeSpeedLabel.Text = "Speed:"
         hingeSpeedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -4418,14 +4602,14 @@ local function createPhysicsTool()
         hingeSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
         hingeSpeedLabel.Parent = advancedFrame
         
-        local hingeSpeedInput = createNumberInput(advancedFrame, "0-100", UDim2.new(0, 220, 0, 55))
+        local hingeSpeedInput = createNumberInput(advancedFrame, "0-100", UDim2.new(0, 220, 0, 82))
         hingeSpeedInput.Size = UDim2.new(0, 35, 0, 25)
         hingeSpeedInput.Text = "10"
         
         -- Servo Keybind Mode
         local servoKeybindLabel = Instance.new("TextLabel")
         servoKeybindLabel.Size = UDim2.new(0, 90, 0, 25)
-        servoKeybindLabel.Position = UDim2.new(0, 0, 0, 85)
+        servoKeybindLabel.Position = UDim2.new(0, 0, 0, 112)
         servoKeybindLabel.BackgroundTransparency = 1
         servoKeybindLabel.Text = "Servo Keybind:"
         servoKeybindLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -4434,18 +4618,18 @@ local function createPhysicsTool()
         servoKeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
         servoKeybindLabel.Parent = advancedFrame
         
-        local servoKeybindInput = createNumberInput(advancedFrame, "Key", UDim2.new(0, 95, 0, 85))
+        local servoKeybindInput = createNumberInput(advancedFrame, "Key", UDim2.new(0, 95, 0, 112))
         servoKeybindInput.Size = UDim2.new(0, 50, 0, 25)
         servoKeybindInput.Text = "Q"
         servoKeybindInput.PlaceholderText = "Q"
         
         local servoModeDropdown = createDropdown(advancedFrame, {"Toggle", "Hold"})
-        servoModeDropdown.Position = UDim2.new(0, 155, 0, 85)
+        servoModeDropdown.Position = UDim2.new(0, 155, 0, 112)
         servoModeDropdown.Size = UDim2.new(0, 60, 0, 25)
         
         local angle1Label = Instance.new("TextLabel")
         angle1Label.Size = UDim2.new(0, 60, 0, 25)
-        angle1Label.Position = UDim2.new(0, 0, 0, 115)
+        angle1Label.Position = UDim2.new(0, 0, 0, 142)
         angle1Label.BackgroundTransparency = 1
         angle1Label.Text = "Angle 1°:"
         angle1Label.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -4694,7 +4878,7 @@ local function createPhysicsTool()
         end)
         
         -- Mode dropdown for attachment positioning
-        local modeDropdown = createDropdown(panel, {"Core", "Face", "Auto Face", "Anti-AutoFace"})
+        local modeDropdown = createDropdown(panel, {"Core", "Face", "Auto Face", "Anti-AutoFace", "Exact Point"})
         modeDropdown.Position = UDim2.new(0, 165, 0, 40)
         modeDropdown.Size = UDim2.new(0, 80, 0, 25)
         modeDropdown.MouseButton1Click:Connect(function()
@@ -4760,6 +4944,8 @@ local function createPhysicsTool()
             local advancedSettings = {
                 stiffness = tonumber(stiffnessInput.Text) or 1000,
                 damping = tonumber(dampingInput.Text) or 100,
+                maxTorque = tonumber(maxTorqueInput.Text) or 10000,
+                responsiveness = tonumber(responsivenessInput.Text) or 10,
                 hingeType = hingeTypeDropdown.Text:gsub(" ▼", ""),
                 hingeSpeed = tonumber(hingeSpeedInput.Text) or 10,
                 restitution = restitutionToggle:GetAttribute("ToggleState") and (tonumber(restitutionInputNew.Text) or 0) or 0,
@@ -5636,8 +5822,64 @@ local function createPhysicsTool()
         btn.MouseButton1Click:Connect(function() applyPhysicsPaint(dropdown.Text:gsub(" ▼", "")) end)
     end
 
+    local function createMagnetSettingsPanel(parent)
+        local panel = createPanel(parent, "🧲 Magnet Settings", 17)
+        panel.Size = UDim2.new(0, 280, 0, 140)
+        
+        -- Info label
+        local infoLabel = Instance.new("TextLabel")
+        infoLabel.Size = UDim2.new(1, -20, 0, 30)
+        infoLabel.Position = UDim2.new(0, 10, 0, 35)
+        infoLabel.BackgroundTransparency = 1
+        infoLabel.Text = "🔴↔🔵 Attract | 🔴↔🔴 / 🔵↔🔵 Repel"
+        infoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        infoLabel.TextSize = 12
+        infoLabel.Font = Enum.Font.GothamBold
+        infoLabel.Parent = panel
+        
+        -- Strength input
+        local strengthLabel = Instance.new("TextLabel")
+        strengthLabel.Size = UDim2.new(0, 70, 0, 25)
+        strengthLabel.Position = UDim2.new(0, 10, 0, 70)
+        strengthLabel.BackgroundTransparency = 1
+        strengthLabel.Text = "Strength:"
+        strengthLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        strengthLabel.TextSize = 12
+        strengthLabel.Font = Enum.Font.Gotham
+        strengthLabel.TextXAlignment = Enum.TextXAlignment.Left
+        strengthLabel.Parent = panel
+        
+        local strengthInput = createNumberInput(panel, "", UDim2.new(0, 85, 0, 70))
+        strengthInput.Text = tostring(magnetSettings.strength)
+        strengthInput.Size = UDim2.new(0, 80, 0, 25)
+        strengthInput.FocusLost:Connect(function()
+            magnetSettings.strength = tonumber(strengthInput.Text) or 500
+            print("🧲 Magnet Strength: " .. magnetSettings.strength)
+        end)
+        
+        -- Snap Distance input
+        local snapLabel = Instance.new("TextLabel")
+        snapLabel.Size = UDim2.new(0, 70, 0, 25)
+        snapLabel.Position = UDim2.new(0, 10, 0, 100)
+        snapLabel.BackgroundTransparency = 1
+        snapLabel.Text = "Distance:"
+        snapLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        snapLabel.TextSize = 12
+        snapLabel.Font = Enum.Font.Gotham
+        snapLabel.TextXAlignment = Enum.TextXAlignment.Left
+        snapLabel.Parent = panel
+        
+        local snapInput = createNumberInput(panel, "", UDim2.new(0, 85, 0, 100))
+        snapInput.Text = tostring(magnetSettings.snapDistance)
+        snapInput.Size = UDim2.new(0, 80, 0, 25)
+        snapInput.FocusLost:Connect(function()
+            magnetSettings.snapDistance = tonumber(snapInput.Text) or 50
+            print("🧲 Snap Distance: " .. magnetSettings.snapDistance)
+        end)
+    end
+
     local function createKineticAmplifierPanel(parent)
-        local panel = createPanel(parent, "⚡ Kinetic Amplifier", 17)
+        local panel = createPanel(parent, "⚡ Kinetic Amplifier", 18)
         local applyBtn = createButton(panel, "Apply Amplifier", UDim2.new(0.5, -5, 0, 25), UDim2.new(0, 10, 0, 50))
         applyBtn.MouseButton1Click:Connect(function() applyKineticAmplifier() end)
         local releaseBtn = createButton(panel, "Release Energy", UDim2.new(0.5, -5, 0, 25), UDim2.new(0.5, 5, 0, 50))
@@ -5646,7 +5888,7 @@ local function createPhysicsTool()
     end
 
     local function createBlackHolePanel(parent)
-        local panel = createPanel(parent, "🌑 Black Hole", 18)
+        local panel = createPanel(parent, "🌑 Black Hole", 19)
         local input = createNumberInput(panel, "Strength", UDim2.new(0, 10, 0, 40))
         input.Text = "1000"
         input.Size = UDim2.new(0, 80, 0, 25)
@@ -5658,7 +5900,7 @@ local function createPhysicsTool()
     end
 
     local function createBuoyancyPanel(parent)
-        local panel = createPanel(parent, "🌊 Buoyancy Paint", 19)
+        local panel = createPanel(parent, "🌊 Buoyancy Paint", 20)
         local modeDropdown = createDropdown(panel, {"Normal", "Hydrophobic"})
         modeDropdown.Position = UDim2.new(0, 10, 0, 40)
         modeDropdown.Size = UDim2.new(0, 100, 0, 25)
@@ -5677,7 +5919,7 @@ local function createPhysicsTool()
     end
 
     local function createMomentumAbsorberPanel(parent)
-        local panel = createPanel(parent, "⚡ Momentum Absorber", 20)
+        local panel = createPanel(parent, "⚡ Momentum Absorber", 21)
         local modeDropdown = createDropdown(panel, {"Burst", "Pulse", "Redirect"})
         modeDropdown.Position = UDim2.new(0, 10, 0, 40)
         modeDropdown.Size = UDim2.new(0, 100, 0, 25)
@@ -5695,7 +5937,7 @@ local function createPhysicsTool()
     end
 
     local function createForceReflectionPanel(parent)
-        local panel = createPanel(parent, "🔮 Force Reflection", 21)
+        local panel = createPanel(parent, "🔮 Force Reflection", 22)
         local coefInput = createNumberInput(panel, "Coef", UDim2.new(0, 10, 0, 40))
         coefInput.Text = "1.0"
         coefInput.Size = UDim2.new(0, 50, 0, 25)
@@ -5724,7 +5966,7 @@ local function createPhysicsTool()
     end
 
     local function createShockwaveGeneratorPanel(parent)
-        local panel = createPanel(parent, "💥 Shockwave Generator", 23)
+        local panel = createPanel(parent, "💥 Shockwave Generator", 24)
         
         -- MODE 1: Apply to Parts
         local mode1Label = Instance.new("TextLabel")
@@ -5795,7 +6037,7 @@ local function createPhysicsTool()
     end
 
     local function createExclusiveZeroGPanel(parent)
-        local panel = createPanel(parent, "🌌 Exclusive Zero-G", 24)
+        local panel = createPanel(parent, "🌌 Exclusive Zero-G", 25)
         
         local infoLabel = Instance.new("TextLabel")
         infoLabel.Size = UDim2.new(1, -20, 0, 40)
@@ -5821,7 +6063,7 @@ local function createPhysicsTool()
     end
 
     local function createOrbiterCorePanel(parent)
-        local panel = createPanel(parent, "🌀 Orbiter Core", 25)
+        local panel = createPanel(parent, "🌀 Orbiter Core", 26)
         
         local freqInput = createNumberInput(panel, "Freq", UDim2.new(0, 10, 0, 40))
         freqInput.Text = "2"
@@ -5860,7 +6102,7 @@ local function createPhysicsTool()
     end
 
     local function createGlobalPhysicsPaintPanel(parent)
-        local panel = createPanel(parent, "🎨 Global Physics Paint", 26)
+        local panel = createPanel(parent, "🎨 Global Physics Paint", 27)
         
         local infoLabel = Instance.new("TextLabel")
         infoLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -5889,7 +6131,7 @@ local function createPhysicsTool()
     end
 
     local function createGravityDistorterPanel(parent)
-        local panel = createPanel(parent, "🌗 Gravity Distorter", 22)
+        local panel = createPanel(parent, "🌗 Gravity Distorter", 23)
         local xInput = createNumberInput(panel, "X", UDim2.new(0, 10, 0, 40))
         xInput.Size = UDim2.new(0, 40, 0, 25)
         xInput.Text = "0"
@@ -5924,7 +6166,7 @@ local function createPhysicsTool()
     end
 
     local function createExponentialTweenPanel(parent)
-        local panel = createPanel(parent, "📐 Exponential Tween", 23)
+        local panel = createPanel(parent, "📐 Exponential Tween", 24)
         
         -- Position 1
         local pos1Label = Instance.new("TextLabel")
@@ -6252,7 +6494,7 @@ local function createPhysicsTool()
     end
     
     local function createRotationLockPanel(parent)
-        local panel = createPanel(parent, "🔐 Rotation Lock", 25)
+        local panel = createPanel(parent, "🔐 Rotation Lock", 28)
         local infoLabel = Instance.new("TextLabel")
         infoLabel.Size = UDim2.new(1, -20, 0, 30)
         infoLabel.Position = UDim2.new(0, 10, 0, 40)
@@ -6277,7 +6519,7 @@ local function createPhysicsTool()
     end
 
     local function createLinearOscillatePanel(parent)
-        local panel = createPanel(parent, "🔄 Linear Oscillate", 26)
+        local panel = createPanel(parent, "🔄 Linear Oscillate", 29)
         
         local typeDropdown = createDropdown(panel, {"Linear", "Constant", "Quadratic", "Cubic", "Sine", "Exponential", "Elastic", "Bounce"})
         typeDropdown.Position = UDim2.new(0, 10, 0, 40)
@@ -6802,7 +7044,7 @@ local function createPhysicsTool()
     end
 
     local function createAngularOscillatePanel(parent)
-        local panel = createPanel(parent, "🌀 Angular Oscillate", 27)
+        local panel = createPanel(parent, "🌀 Angular Oscillate", 30)
         
         local typeDropdown = createDropdown(panel, {"Linear", "Constant", "Quadratic", "Cubic", "Sine", "Exponential"})
         typeDropdown.Position = UDim2.new(0, 10, 0, 40)
@@ -8372,7 +8614,7 @@ local function createPhysicsTool()
     end
 
     local function createSettingsPanel(parent)
-        local panel = createPanel(parent, "⚙️ Settings", 28)
+        local panel = createPanel(parent, "⚙️ Settings", 31)
         panel.Size = UDim2.new(0, 280, 0, 400)
         
         -- Theme Selection
@@ -8484,7 +8726,7 @@ local function createPhysicsTool()
     end
 
     local function createSentinelPanel(parent)
-        local panel = createPanel(parent, "🤖 Sentinel", 29)
+        local panel = createPanel(parent, "🤖 Sentinel", 32)
         panel.Size = UDim2.new(0, 280, 0, 1500)
         
         local infoLabel = Instance.new("TextLabel")
@@ -9031,6 +9273,7 @@ local function createPhysicsTool()
         createPhysicsRecorderPanel(gridContainer)
         createGravityGunPanel(gridContainer)
         createPhysicsPaintPanel(gridContainer)
+        createMagnetSettingsPanel(gridContainer)
         createKineticAmplifierPanel(gridContainer)
         createBlackHolePanel(gridContainer)
         createMomentumAbsorberPanel(gridContainer)
@@ -9505,7 +9748,7 @@ local function createPhysicsTool()
         -- NEW: Part Controller Panel
         local function createPartControllerPanel(parent)
             local panel = createPanel(parent, "🎮 Part Controller", 32)
-            panel.Size = UDim2.new(0, 280, 0, 650)
+            panel.Size = UDim2.new(0, 280, 0, 750)
             
             local infoLabel = Instance.new("TextLabel")
             infoLabel.Size = UDim2.new(1, -20, 0, 50)
@@ -9580,8 +9823,42 @@ local function createPhysicsTool()
                 partControllerData.torqueMultiplier = torque
             end)
             
+            -- Camera Orientation Speed (for fly mode)
+            local camOrientLabel = Instance.new("TextLabel")
+            camOrientLabel.Size = UDim2.new(1, -20, 0, 20)
+            camOrientLabel.Position = UDim2.new(0, 10, 0, 170)
+            camOrientLabel.BackgroundTransparency = 1
+            camOrientLabel.Text = "🎥 Camera Orient Speed:"
+            camOrientLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+            camOrientLabel.TextSize = 11
+            camOrientLabel.Font = Enum.Font.GothamBold
+            camOrientLabel.TextXAlignment = Enum.TextXAlignment.Left
+            camOrientLabel.Parent = panel
+            
+            local camOrientPInput = createNumberInput(panel, "P", UDim2.new(0, 10, 0, 195))
+            camOrientPInput.Size = UDim2.new(0, 125, 0, 25)
+            camOrientPInput.Text = "50000"
+            
+            local camOrientDInput = createNumberInput(panel, "D", UDim2.new(0, 145, 0, 195))
+            camOrientDInput.Size = UDim2.new(0, 125, 0, 25)
+            camOrientDInput.Text = "5000"
+            
+            camOrientPInput.FocusLost:Connect(function()
+                local p = tonumber(camOrientPInput.Text) or 50000
+                p = math.max(p, 100) -- Minimum 100
+                camOrientPInput.Text = tostring(p)
+                partControllerData.gyroP = p
+            end)
+            
+            camOrientDInput.FocusLost:Connect(function()
+                local d = tonumber(camOrientDInput.Text) or 5000
+                d = math.max(d, 100) -- Minimum 100
+                camOrientDInput.Text = tostring(d)
+                partControllerData.gyroD = d
+            end)
+            
             -- Mode Toggles
-            local flyModeToggle = createToggleButton(panel, "🚀 Fly Mode", UDim2.new(0, 125, 0, 30), UDim2.new(0, 10, 0, 170), false)
+            local flyModeToggle = createToggleButton(panel, "🚀 Fly Mode", UDim2.new(0, 125, 0, 30), UDim2.new(0, 10, 0, 230), false)
             flyModeToggle.MouseButton1Click:Connect(function()
                 partControllerData.flyMode = not partControllerData.flyMode
                 if partControllerData.flyMode then
@@ -9593,7 +9870,7 @@ local function createPhysicsTool()
                 end
             end)
             
-            local stepModeToggle = createToggleButton(panel, "📐 Step Mode", UDim2.new(0, 125, 0, 30), UDim2.new(0, 145, 0, 170), false)
+            local stepModeToggle = createToggleButton(panel, "📐 Step Mode", UDim2.new(0, 125, 0, 30), UDim2.new(0, 145, 0, 230), false)
             stepModeToggle.MouseButton1Click:Connect(function()
                 partControllerData.stepMode = not partControllerData.stepMode
                 if partControllerData.stepMode then
@@ -9605,10 +9882,49 @@ local function createPhysicsTool()
                 end
             end)
             
+            -- No Roll/Rotation Mode Toggle
+            local noRotationToggle = createToggleButton(panel, "🔒 No Rotation", UDim2.new(0, 125, 0, 30), UDim2.new(0, 10, 0, 270), false)
+            noRotationToggle.MouseButton1Click:Connect(function()
+                partControllerData.noRotation = not partControllerData.noRotation
+                if partControllerData.noRotation then
+                    noRotationToggle.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    noRotationToggle.Text = "🔒 No Rot: ON"
+                else
+                    noRotationToggle.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+                    noRotationToggle.Text = "🔒 No Rotation"
+                end
+            end)
+            
+            -- Pure Velocity Mode Toggle
+            local pureVelocityToggle = createToggleButton(panel, "⚡ Pure Velocity", UDim2.new(0, 125, 0, 30), UDim2.new(0, 145, 0, 270), false)
+            pureVelocityToggle.MouseButton1Click:Connect(function()
+                partControllerData.pureVelocity = not partControllerData.pureVelocity
+                if partControllerData.pureVelocity then
+                    pureVelocityToggle.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    pureVelocityToggle.Text = "⚡ Pure Vel: ON"
+                else
+                    pureVelocityToggle.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+                    pureVelocityToggle.Text = "⚡ Pure Velocity"
+                end
+            end)
+            
+            -- No Hover Mode Toggle (Fly mode without hovering)
+            local noHoverToggle = createToggleButton(panel, "🪂 No Hover", UDim2.new(0, 125, 0, 30), UDim2.new(0, 10, 0, 310), false)
+            noHoverToggle.MouseButton1Click:Connect(function()
+                partControllerData.noHover = not partControllerData.noHover
+                if partControllerData.noHover then
+                    noHoverToggle.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+                    noHoverToggle.Text = "🪂 No Hover: ON"
+                else
+                    noHoverToggle.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+                    noHoverToggle.Text = "🪂 No Hover"
+                end
+            end)
+            
             -- Delayed Camera Toggle
             local delayedCameraFrame = Instance.new("Frame")
             delayedCameraFrame.Size = UDim2.new(1, -20, 0, 25)
-            delayedCameraFrame.Position = UDim2.new(0, 10, 0, 210)
+            delayedCameraFrame.Position = UDim2.new(0, 10, 0, 350)
             delayedCameraFrame.BackgroundTransparency = 1
             delayedCameraFrame.Parent = panel
             
@@ -9658,7 +9974,7 @@ local function createPhysicsTool()
             -- Camera Offset Settings
             local cameraLabel = Instance.new("TextLabel")
             cameraLabel.Size = UDim2.new(1, -20, 0, 20)
-            cameraLabel.Position = UDim2.new(0, 10, 0, 245)
+            cameraLabel.Position = UDim2.new(0, 10, 0, 385)
             cameraLabel.BackgroundTransparency = 1
             cameraLabel.Text = "📷 Camera Offset:"
             cameraLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
@@ -9667,15 +9983,15 @@ local function createPhysicsTool()
             cameraLabel.TextXAlignment = Enum.TextXAlignment.Left
             cameraLabel.Parent = panel
             
-            local cameraXInput = createNumberInput(panel, "X", UDim2.new(0, 10, 0, 270))
+            local cameraXInput = createNumberInput(panel, "X", UDim2.new(0, 10, 0, 410))
             cameraXInput.Size = UDim2.new(0, 80, 0, 25)
             cameraXInput.Text = "0"
             
-            local cameraYInput = createNumberInput(panel, "Y", UDim2.new(0, 95, 0, 270))
+            local cameraYInput = createNumberInput(panel, "Y", UDim2.new(0, 95, 0, 410))
             cameraYInput.Size = UDim2.new(0, 80, 0, 25)
             cameraYInput.Text = "5"
             
-            local cameraZInput = createNumberInput(panel, "Z", UDim2.new(0, 180, 0, 270))
+            local cameraZInput = createNumberInput(panel, "Z", UDim2.new(0, 180, 0, 410))
             cameraZInput.Size = UDim2.new(0, 80, 0, 25)
             cameraZInput.Text = "10"
             
@@ -9697,7 +10013,7 @@ local function createPhysicsTool()
             -- Controls Info
             local controlsLabel = Instance.new("TextLabel")
             controlsLabel.Size = UDim2.new(1, -20, 0, 120)
-            controlsLabel.Position = UDim2.new(0, 10, 0, 305)
+            controlsLabel.Position = UDim2.new(0, 10, 0, 445)
             controlsLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
             controlsLabel.BorderSizePixel = 0
             controlsLabel.Text = [[⌨️ CONTROLS:
@@ -9729,7 +10045,7 @@ G - Roll Left     |  H - Roll Right]]
             -- Status Label
             local statusLabel = Instance.new("TextLabel")
             statusLabel.Size = UDim2.new(1, -20, 0, 30)
-            statusLabel.Position = UDim2.new(0, 10, 0, 435)
+            statusLabel.Position = UDim2.new(0, 10, 0, 535)
             statusLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
             statusLabel.BorderSizePixel = 0
             statusLabel.Text = "Status: Inactive"
@@ -9743,7 +10059,7 @@ G - Roll Left     |  H - Roll Right]]
             statusCorner.Parent = statusLabel
             
             -- Start/Stop Control Button
-            local controlBtn = createButton(panel, "▶️ START CONTROL", UDim2.new(1, -20, 0, 40), UDim2.new(0, 10, 0, 475))
+            local controlBtn = createButton(panel, "▶️ START CONTROL", UDim2.new(1, -20, 0, 40), UDim2.new(0, 10, 0, 575))
             controlBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
             controlBtn.TextSize = 14
             
@@ -9756,6 +10072,7 @@ G - Roll Left     |  H - Roll Right]]
                 -- Clean up physics objects
                 if partControllerData.bodyAngularVelocity then partControllerData.bodyAngularVelocity:Destroy() end
                 if partControllerData.bodyVelocity then partControllerData.bodyVelocity:Destroy() end
+                if partControllerData.bodyGyro then partControllerData.bodyGyro:Destroy() end
                 if partControllerData.alignOrientation then partControllerData.alignOrientation:Destroy() end
                 if partControllerData.controlConnection then partControllerData.controlConnection:Disconnect() end
                 if partControllerData.cameraConnection then partControllerData.cameraConnection:Disconnect() end
@@ -9766,17 +10083,22 @@ G - Roll Left     |  H - Roll Right]]
                     if jumpBar then jumpBar:Destroy() end
                 end
                 
-                -- Restore camera
+                -- Restore camera (INSTANT - no tween)
+                local camera = workspace.CurrentCamera
                 if partControllerData.originalCameraType then
-                    workspace.CurrentCamera.CameraType = partControllerData.originalCameraType
+                    camera.CameraType = partControllerData.originalCameraType
                 end
                 if partControllerData.originalCameraSubject then
-                    workspace.CurrentCamera.CameraSubject = partControllerData.originalCameraSubject
+                    camera.CameraSubject = partControllerData.originalCameraSubject
                 end
+                -- Force camera to reset orientation instantly
+                camera.CFrame = camera.CFrame -- Refresh camera
+                print("📷 Camera instantly restored to normal")
                 
                 partControllerData.controlledPart = nil
                 partControllerData.bodyAngularVelocity = nil
                 partControllerData.bodyVelocity = nil
+                partControllerData.bodyGyro = nil
                 partControllerData.alignOrientation = nil
                 partControllerData.controlConnection = nil
                 partControllerData.cameraConnection = nil
@@ -9830,6 +10152,15 @@ G - Roll Left     |  H - Roll Right]]
                     bodyVelocity.Velocity = Vector3.new(0, 0, 0)
                     bodyVelocity.Parent = part
                     partControllerData.bodyVelocity = bodyVelocity
+                    
+                    -- Create BodyGyro for fly mode camera orientation
+                    local bodyGyro = Instance.new("BodyGyro")
+                    bodyGyro.MaxTorque = Vector3.new(0, 0, 0) -- Disabled by default
+                    bodyGyro.D = partControllerData.gyroD
+                    bodyGyro.P = partControllerData.gyroP
+                    bodyGyro.CFrame = part.CFrame
+                    bodyGyro.Parent = part
+                    partControllerData.bodyGyro = bodyGyro
                 end)
                 
                 -- Determine shape for rolling physics
@@ -9953,8 +10284,9 @@ G - Roll Left     |  H - Roll Right]]
                     
                     local bodyAngularVelocity = partControllerData.bodyAngularVelocity
                     local bodyVelocity = partControllerData.bodyVelocity
+                    local bodyGyro = partControllerData.bodyGyro
                     
-                    if not bodyAngularVelocity or not bodyVelocity then return end
+                    if not bodyAngularVelocity or not bodyVelocity or not bodyGyro then return end
                     
                     -- Update jump charge (oscillates like fishing rod)
                     if partControllerData.isChargingJump then
@@ -10002,34 +10334,23 @@ G - Roll Left     |  H - Roll Right]]
                         -- In step mode, disable rolling and use AlignOrientation (TODO: implement)
                         bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
                         bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+                        bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
                         
                     else
                         -- Normal rolling mode
                         local moveDirection = Vector3.new(0, 0, 0)
                         
                         if keysPressed[Enum.KeyCode.W] then
-                            moveDirection = moveDirection + (cameraCFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+                            moveDirection = moveDirection + cameraCFrame.LookVector
                         end
                         if keysPressed[Enum.KeyCode.S] then
-                            moveDirection = moveDirection - (cameraCFrame.LookVector * Vector3.new(1, 0, 1)).Unit
+                            moveDirection = moveDirection - cameraCFrame.LookVector
                         end
-                        
-                        if shiftLockEnabled then
-                            -- ShiftLock mode - A/D strafe
-                            if keysPressed[Enum.KeyCode.A] then
-                                moveDirection = moveDirection - (cameraCFrame.RightVector * Vector3.new(1, 0, 1)).Unit
-                            end
-                            if keysPressed[Enum.KeyCode.D] then
-                                moveDirection = moveDirection + (cameraCFrame.RightVector * Vector3.new(1, 0, 1)).Unit
-                            end
-                        else
-                            -- Normal mode - A/D strafe (same as ShiftLock for now)
-                            if keysPressed[Enum.KeyCode.A] then
-                                moveDirection = moveDirection - (cameraCFrame.RightVector * Vector3.new(1, 0, 1)).Unit
-                            end
-                            if keysPressed[Enum.KeyCode.D] then
-                                moveDirection = moveDirection + (cameraCFrame.RightVector * Vector3.new(1, 0, 1)).Unit
-                            end
+                        if keysPressed[Enum.KeyCode.A] then
+                            moveDirection = moveDirection - cameraCFrame.RightVector
+                        end
+                        if keysPressed[Enum.KeyCode.D] then
+                            moveDirection = moveDirection + cameraCFrame.RightVector
                         end
                         
                         if partControllerData.flyMode then
@@ -10046,14 +10367,34 @@ G - Roll Left     |  H - Roll Right]]
                             
                             local rollSpeed = partControllerData.rollSpeed
                             
-                            if partControllerData.flyMode then
-                                -- Fly mode: Use BodyVelocity for direct movement
-                                bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                                bodyVelocity.Velocity = moveDirection * rollSpeed
+                            -- Pure Velocity Mode - Direct velocity control without physics
+                            if partControllerData.pureVelocity then
+                                part.AssemblyLinearVelocity = moveDirection * rollSpeed
                                 bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+                                bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+                                bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
+                            elseif partControllerData.flyMode then
+                                -- Fly mode: Use BodyVelocity + BodyGyro for camera-oriented flight
+                                if partControllerData.noHoverMode then
+                                    -- No Hover Mode: Only control X and Z axes, let gravity handle Y
+                                    bodyVelocity.MaxForce = Vector3.new(1e5, 0, 1e5) -- No Y-axis force
+                                    bodyVelocity.Velocity = Vector3.new(moveDirection.X * rollSpeed, 0, moveDirection.Z * rollSpeed)
+                                else
+                                    -- Normal Fly Mode: Full 3D control
+                                    bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                                    bodyVelocity.Velocity = moveDirection * rollSpeed
+                                end
+                                bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+                                
+                                -- Orient part to face camera direction (update P/D values dynamically)
+                                bodyGyro.P = partControllerData.gyroP
+                                bodyGyro.D = partControllerData.gyroD
+                                bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+                                bodyGyro.CFrame = cameraCFrame
                             else
                                 -- Roll mode: Use BodyAngularVelocity for torque-based rolling
                                 bodyVelocity.MaxForce = Vector3.new(0, 0, 0) -- Disable fly mode
+                                bodyGyro.MaxTorque = Vector3.new(0, 0, 0) -- Disable gyro
                                 
                                 -- Calculate roll axis (perpendicular to movement direction)
                                 local rollAxis = Vector3.new(moveDirection.Z, 0, -moveDirection.X)
@@ -10078,15 +10419,49 @@ G - Roll Left     |  H - Roll Right]]
                                 bodyAngularVelocity.AngularVelocity = rollAxis * angularSpeed
                             end
                         else
-                            -- No movement - stop
+                            -- No movement
+                            if partControllerData.flyMode then
+                                -- In fly mode, keep hovering (zero velocity but keep forces active)
+                                if partControllerData.noHoverMode then
+                                    -- No Hover Mode: Only control X and Z axes, let gravity handle Y
+                                    bodyVelocity.MaxForce = Vector3.new(1e5, 0, 1e5) -- No Y-axis force
+                                else
+                                    -- Normal Fly Mode: Full 3D control
+                                    bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                                end
+                                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                                bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+                                -- Update BodyGyro P/D values dynamically
+                                bodyGyro.P = partControllerData.gyroP
+                                bodyGyro.D = partControllerData.gyroD
+                                bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+                                bodyGyro.CFrame = cameraCFrame
+                            elseif partControllerData.pureVelocity then
+                                -- Pure velocity mode - stop movement
+                                part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                                bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+                                bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+                                bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
+                            else
+                                -- Roll mode - stop
+                                bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
+                                bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+                                bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
+                            end
+                        end
+                        
+                        -- No Rotation Mode - Lock rotation
+                        if partControllerData.noRotation then
                             bodyAngularVelocity.AngularVelocity = Vector3.new(0, 0, 0)
-                            bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+                            part.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                         end
                     end
                     
                     -- Update status
                     local modeText = partControllerData.flyMode and "FLY" or "ROLL"
                     if partControllerData.stepMode then modeText = "STEP" end
+                    if partControllerData.pureVelocity then modeText = "PURE VEL" end
+                    if partControllerData.noRotation then modeText = modeText .. " | NO ROT" end
                     statusLabel.Text = "Status: Active (" .. modeText .. " | " .. shapeType .. ")"
                 end)
                 
@@ -10107,7 +10482,7 @@ G - Roll Left     |  H - Roll Right]]
             end)
             
             -- Emergency Stop Button
-            local emergencyStopBtn = createButton(panel, "🛑 EMERGENCY STOP", UDim2.new(1, -20, 0, 35), UDim2.new(0, 10, 0, 525))
+            local emergencyStopBtn = createButton(panel, "🛑 EMERGENCY STOP", UDim2.new(1, -20, 0, 35), UDim2.new(0, 10, 0, 625))
             emergencyStopBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
             emergencyStopBtn.MouseButton1Click:Connect(function()
                 stopPartControl()
@@ -10115,14 +10490,14 @@ G - Roll Left     |  H - Roll Right]]
             end)
             
             -- Reset Camera Button
-            local resetCameraBtn = createButton(panel, "📷 Reset Camera", UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 570))
+            local resetCameraBtn = createButton(panel, "📷 Reset Camera", UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 670))
             resetCameraBtn.MouseButton1Click:Connect(function()
                 workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
                 print("📷 Camera reset to default")
             end)
             
             -- Info Button
-            local infoBtn = createButton(panel, "ℹ️ Help", UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 610))
+            local infoBtn = createButton(panel, "ℹ️ Help", UDim2.new(1, -20, 0, 30), UDim2.new(0, 10, 0, 710))
             infoBtn.MouseButton1Click:Connect(function()
                 print([[
 🎮 PART CONTROLLER HELP:
