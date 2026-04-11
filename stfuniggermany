@@ -10745,7 +10745,15 @@ Press EMERGENCY STOP if anything goes wrong.
         RunService.Heartbeat:Connect(function(dt)
             if gravityGunActive and gravityGunPart and gravityGunPart.Parent then
                 local targetPos = mouse.Hit.Position + Vector3.new(0, 3, 0)
-                gravityGunPart.AssemblyLinearVelocity = (targetPos - gravityGunPart.Position) * 5
+                local direction = (targetPos - gravityGunPart.Position)
+                local distance = direction.Magnitude
+                
+                -- Smooth velocity with distance-based damping
+                local speed = math.clamp(distance * 2, 0, 50) -- Max speed of 50
+                local targetVelocity = direction.Unit * speed
+                
+                -- Lerp current velocity to target velocity for smoothness
+                gravityGunPart.AssemblyLinearVelocity = gravityGunPart.AssemblyLinearVelocity:Lerp(targetVelocity, 0.3)
             end
             
             if shockwaveMode2Active and eKeyPressed then
